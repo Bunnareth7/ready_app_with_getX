@@ -31,7 +31,7 @@ class Order {
       statusColor: Color(0xFFe3f5e3),
       quantity: 'X7 ',
       type: 'Pickup',
-      textColors: Colors.green
+      textColors: Color(0xFF0BB20B)
     ),
     Order(
       id: 'CHHUNDARA KHORN',
@@ -41,7 +41,7 @@ class Order {
       statusColor: const Color(0xFFfdf1d7),
       quantity: 'X7 ',
       type: 'Pickup',
-      textColors: Colors.orange
+      textColors: Color(0xFFF1BD00)
     ),
     Order(
       id: 'K12',
@@ -51,7 +51,7 @@ class Order {
       statusColor: Color(0xFFe3f5e3),
       quantity: 'X7 ',
       type: 'Dine in',
-      textColors: Colors.green
+      textColors: Color(0xFF0BB20B)
     ),
     Order(
       id: 'G-123',
@@ -61,7 +61,7 @@ class Order {
       statusColor: const Color(0xFFfdf1d7),
       quantity: 'X7 ',
       type: 'Delivery',
-      textColors: Colors.orange
+      textColors: Color(0xFFF1BD00)
     ),
   ];
 }

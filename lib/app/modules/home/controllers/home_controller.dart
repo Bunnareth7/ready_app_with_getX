@@ -1,23 +1,26 @@
+// home_controller.dart
 import 'package:get/get.dart';
+import 'package:learn_getx2/app/data/models/order_model.dart';
+
 
 class HomeController extends GetxController {
-  //TODO: Implement HomeController
-
-  final count = 0.obs;
+  var orders = <Order>[].obs;
+  var selectedTabIndex = 0.obs;
+  final List<String> tabTitles = ['All', 'Pickup', 'Walk-in', 'Delivery', 'Takeaway'];
+  
+  List<Order> get filteredOrders {
+    if (selectedTabIndex.value == 0) {
+      return orders;
+    }
+    final filter = tabTitles[selectedTabIndex.value];
+    return orders.where((order) => order.type == filter).toList();
+  }
+  void changeTab(int index) {
+    selectedTabIndex.value = index;
+  }
   @override
   void onInit() {
     super.onInit();
+    orders.value = Order.dummyOrders;
   }
-
-  @override
-  void onReady() {
-    super.onReady();
-  }
-
-  @override
-  void onClose() {
-    super.onClose();
-  }
-
-  void increment() => count.value++;
 }

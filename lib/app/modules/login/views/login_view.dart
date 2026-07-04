@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-
 import 'package:get/get.dart';
-import 'package:learn_getx2/app/routes/app_pages.dart';
+import 'package:learn_getx2/app/modules/home/views/home_view.dart';
 
 import '../controllers/login_controller.dart';
 
@@ -91,7 +90,7 @@ class LoginView extends GetView<LoginController> {
                                   decoration: BoxDecoration(
                                     color: const Color(
                                       0xFF055FC8,
-                                    ).withOpacity(0.7569),
+                                    ),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: const Center(
@@ -116,7 +115,7 @@ class LoginView extends GetView<LoginController> {
                       padding: const EdgeInsets.only(left: 20, right: 20),
                       child: InkWell(
                         onTap: () {
-                          Get.offNamed(Routes.HOME);                        
+                          HomeView.open();
                         },
                         borderRadius: BorderRadius.circular(8),
                         child: Container(
@@ -124,14 +123,14 @@ class LoginView extends GetView<LoginController> {
                           height: 50,
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(8),
-                            color: const Color(0xFF055FC8).withOpacity(0.7569),
+                            color: const Color(0xFF055FC8),
                           ),
                           child: const Center(
                             child: Text(
                               "Login",
                               style: TextStyle(
                                 color: Colors.white,
-                                fontWeight: FontWeight.w500,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),
