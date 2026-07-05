@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:learn_getx2/app/modules/home/views/home_view.dart';
-
 import '../controllers/login_controller.dart';
 
 class LoginView extends GetView<LoginController> {
@@ -106,10 +105,13 @@ class LoginView extends GetView<LoginController> {
                                 ),
                               ),
                             ),
+                            
                           ],
                         ),
                       ),
+                      
                     ),
+                    
                     const SizedBox(height: 330),
                     Padding(
                       padding: const EdgeInsets.only(left: 20, right: 20),

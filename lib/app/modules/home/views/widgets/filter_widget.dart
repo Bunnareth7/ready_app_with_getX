@@ -39,7 +39,7 @@ class FilterWidget extends StatelessWidget {
             ),
             indicatorSize: TabBarIndicatorSize.tab,
             dividerColor: Colors.transparent,
-            padding: EdgeInsets.all(2),
+            padding: EdgeInsets.all(6),
             labelPadding: EdgeInsets.zero,
             isScrollable: false,
           ),

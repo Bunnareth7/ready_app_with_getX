@@ -37,7 +37,7 @@ class SettingsView extends GetView<SettingsController> {
                     child: Text('Languages', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500)),
                   ),
                   Spacer(),
-                  Text('English', style:TextStyle(color: Colors.grey) ,),
+                  Text('English', style:TextStyle(color: const Color.fromARGB(255, 189, 41, 41)) ,),
                   SizedBox(width: 10),
                   Icon(Icons.arrow_forward_ios, size: 20, color: Colors.grey),
                 ],

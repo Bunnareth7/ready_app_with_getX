@@ -21,7 +21,6 @@ class Order {
     required this.textColors
     
   });
-
   static List<Order> get dummyOrders => [
     Order(
       id: '001-123',
