@@ -31,7 +31,7 @@ class ApiService extends GetxService {
       print('📥 Response status: ${response.statusCode}');
       print('📥 Response data: $body');
 
-      // ✅ Success - 200 OK
+     
       if (response.statusCode == 200) {
         print('✅ Login successful!');
         return Success(body);
@@ -42,7 +42,7 @@ class ApiService extends GetxService {
         message: body['error'] ?? body['message'] ?? 'Login failed',
       );
     } catch (e) {
-      // ✅ Network or other errors
+      
       print('❌ Error: $e');
       return Failure(message: e.toString());
     }

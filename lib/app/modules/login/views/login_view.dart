@@ -14,7 +14,7 @@ class LoginView extends GetView<LoginController> {
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const SizedBox(height: 50),
+            const SizedBox(height: 60),
             SizedBox(
               width: double.infinity,
               child: Center(
@@ -22,7 +22,7 @@ class LoginView extends GetView<LoginController> {
                   children: [
                     // Image
                     SizedBox(
-                      height: 200,
+                      height: 150,
                       width: 300,
                       child: Image.network(
                         "https://img.magnific.com/free-vector/people-line-waiting-pay_23-2148199795.jpg?semt=ais_hybrid&w=740&q=80",
@@ -39,13 +39,13 @@ class LoginView extends GetView<LoginController> {
                     const Text(
                       "Welcome to Queue System",
                       style: TextStyle(
-                        fontSize: 24,
+                        fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 6),
                     const Text(
-                      "Please enter your credentials to continue",
+                      "Login your cloud account",
                       style: TextStyle(fontSize: 16, color: Colors.black),
                     ),
 
@@ -72,13 +72,13 @@ class LoginView extends GetView<LoginController> {
                       return const SizedBox.shrink();
                     }),
 
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 10),
 
                     // Username
                     Padding(
-                      padding: const EdgeInsets.all(20),
+                     padding: const EdgeInsets.only(top: 10, left: 20, right: 20),
                       child: Container(
-                        height: 56,
+                        height: 50,
                         decoration: BoxDecoration(
                           border: Border.all(color: const Color(0xFFecf0f1)),
                           borderRadius: BorderRadius.circular(12),
@@ -87,19 +87,21 @@ class LoginView extends GetView<LoginController> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Expanded(
-                              child: TextField(
-                                controller: controller.usernameController,
-                                decoration: const InputDecoration(
-                                  hintText: "Username",
-                                  hintStyle: TextStyle(color: Colors.black),
-                                  border: InputBorder.none,
-                                  contentPadding: EdgeInsets.symmetric(
-                                    horizontal: 12,
+                              child: Center(
+                                child: TextField(
+                                  controller: controller.usernameController,
+                                  decoration: const InputDecoration(
+                                    hintText: "Username",
+                                    hintStyle: TextStyle(color: Colors.grey),
+                                    border: InputBorder.none,
+                                    contentPadding: EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 10),
+                            
                           ],
                         ),
                       ),
@@ -107,9 +109,9 @@ class LoginView extends GetView<LoginController> {
 
                     // Password Field
                     Padding(
-                      padding: const EdgeInsets.all(20),
+                      padding: const EdgeInsets.only(top: 20, left: 20, right: 20),
                       child: Container(
-                        height: 56,
+                        height: 50,
                         decoration: BoxDecoration(
                           border: Border.all(color: const Color(0xFFecf0f1)),
                           borderRadius: BorderRadius.circular(12),
@@ -118,15 +120,17 @@ class LoginView extends GetView<LoginController> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Expanded(
-                              child: TextField(
-                                controller: controller.passwordController,
-                                obscureText: true,
-                                decoration: const InputDecoration(
-                                  hintText: "Password",
-                                  hintStyle: TextStyle(color: Colors.black),
-                                  border: InputBorder.none,
-                                  contentPadding: EdgeInsets.symmetric(
-                                    horizontal: 12,
+                              child: Center(
+                                child: TextField(
+                                  controller: controller.passwordController,
+                                  obscureText: true,
+                                  decoration: const InputDecoration(
+                                    hintText: "Password",
+                                    hintStyle: TextStyle(color: Colors.grey),
+                                    border: InputBorder.none,
+                                    contentPadding: EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -137,7 +141,7 @@ class LoginView extends GetView<LoginController> {
                       ),
                     ),
 
-                    const SizedBox(height: 200),
+                    const SizedBox(height: 360),
 
                     // Login Button
                     Padding(
@@ -148,7 +152,7 @@ class LoginView extends GetView<LoginController> {
                           borderRadius: BorderRadius.circular(8),
                           child: Container(
                             width: double.infinity,
-                            height: 50,
+                            height: 45,
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(8),
                               color: controller.isLoading.value
@@ -192,11 +196,7 @@ class LoginView extends GetView<LoginController> {
                   "Powered by Monakom",
                   style: TextStyle(fontSize: 12, color: Color(0xFF666666)),
                 ),
-                InkWell(
-                  onTap: () {
-                    // Handle Monakom logo tap
-                  },
-                  child: SizedBox(
+                SizedBox(
                     width: 100,
                     height: 30,
                     child: Image.network(
@@ -209,7 +209,7 @@ class LoginView extends GetView<LoginController> {
                         );
                       },
                     ),
-                  ),
+                  
                 ),
               ],
             ),

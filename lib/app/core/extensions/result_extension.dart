@@ -1,6 +1,5 @@
-import 'package:flutter/material.dart';
-import 'package:learn_getx2/app/core/results/result.dart';
 
+import '../results/result.dart';
 import '../dialogs/app_dialog.dart';
 
 extension ResultDialogExtension<T> on Result<T> {
@@ -11,7 +10,7 @@ extension ResultDialogExtension<T> on Result<T> {
 
       case Failure<T>():
         final failure = this as Failure<T>;
-        AppDialog.error(failure.message);
+        AppDialog.error(message: failure.message);
         return false;
     }
   }
@@ -24,12 +23,34 @@ extension ResultDialogExtension<T> on Result<T> {
 
       case Failure<T>():
         final failure = this as Failure<T>;
-        AppDialog.apiError(
-          code: failure.code,
-          error: failure.message,
+        AppDialog.error(
           message: failure.message,
+          title: 'Oops',
+          buttonText: 'Okay',
         );
         return false;
+    }
+  }
+
+  // Get error message
+  String? get errorMessage {
+    switch (this) {
+      case Success<T>():
+        return null;
+      case Failure<T>():
+        final failure = this as Failure<T>;
+        return failure.message;
+    }
+  }
+
+  // Check if failure has code
+  int? get errorCode {
+    switch (this) {
+      case Success<T>():
+        return null;
+      case Failure<T>():
+        final failure = this as Failure<T>;
+        return failure.code;
     }
   }
 }

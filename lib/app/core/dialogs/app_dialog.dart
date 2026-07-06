@@ -3,65 +3,26 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class AppDialog {
-  // Show error dialog
-  static void error(String message) {
-    Get.defaultDialog(
-      title: 'Error',
-      middleText: message,
-      textConfirm: 'OK',
-      confirmTextColor: Colors.white,
-      buttonColor: Colors.red,
-      onConfirm: Get.back,
-      barrierDismissible: false,
-    );
-  }
-
-  // Show success dialog
-  static void success(String message) {
-    Get.defaultDialog(
-      title: 'Success',
-      middleText: message,
-      textConfirm: 'OK',
-      confirmTextColor: Colors.white,
-      buttonColor: Colors.green,
-      onConfirm: Get.back,
-      barrierDismissible: false,
-    );
-  }
-
-  // Show custom dialog
-  static void show({
-    required String title,
+  static void error({
     required String message,
-    String buttonText = 'OK',
-    VoidCallback? onConfirm,
-    Color? buttonColor,
+    String title = 'Oops',
+    String buttonText = 'Okay',
+    Color buttonColor = Colors.blue,
   }) {
     Get.defaultDialog(
       title: title,
+      titleStyle: const TextStyle(
+        fontSize: 18,
+        fontWeight: FontWeight.bold,
+        color: Colors.black,
+      ),
       middleText: message,
+      middleTextStyle: const TextStyle(fontSize: 16, color: Colors.black87),
       textConfirm: buttonText,
       confirmTextColor: Colors.white,
-      buttonColor: buttonColor ?? Colors.blue,
-      onConfirm: onConfirm ?? Get.back,
-      barrierDismissible: false,
-    );
-  }
-
-  // Show API error response
-  static void apiError({
-    required int? code,
-    required String error,
-    required String message,
-  }) {
-    final errorText = error.isNotEmpty ? error : message;
-    Get.defaultDialog(
-      title: 'Login Failed',
-      middleText: '$errorText\n\nCode: ${code ?? 'N/A'}',
-      textConfirm: 'OK',
-      confirmTextColor: Colors.white,
-      buttonColor: Colors.red,
+      buttonColor: buttonColor,
       onConfirm: Get.back,
+      radius: 12,
       barrierDismissible: false,
     );
   }

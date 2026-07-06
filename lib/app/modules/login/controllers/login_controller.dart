@@ -4,9 +4,6 @@ import 'package:get/get.dart';
 import 'package:learn_getx2/app/core/results/result.dart';
 import 'package:learn_getx2/app/data/providers/api_service.dart';
 
-import '../../../core/dialogs/app_dialog.dart';
-import '../../../core/extensions/result_extension.dart';
-
 class LoginController extends GetxController {
   final ApiService _apiService = Get.find<ApiService>();
 
@@ -23,8 +20,14 @@ class LoginController extends GetxController {
 
     // Validate
     if (username.isEmpty || password.isEmpty) {
-      errorMessage.value = 'Please enter username and password';
-      AppDialog.error('Please enter username and password');
+      Get.snackbar(
+        'Error',
+        'Please enter username and password',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        duration: const Duration(seconds: 3),
+      );
       return;
     }
 
@@ -32,41 +35,62 @@ class LoginController extends GetxController {
     errorMessage.value = '';
 
     try {
-      // ✅ Call API - returns Result
+      // API - returns Result
       final result = await _apiService.login(username, password);
 
-      // ✅ Handle Result using pattern matching
       switch (result) {
         case Success():
-          // Login successful!
           final token = result.data['access_token'];
           print('✅ Token: $token');
 
           Get.snackbar(
             'Success',
             '✅ Login successful!',
-            snackPosition: SnackPosition.BOTTOM,
+            snackPosition: SnackPosition.TOP,
             backgroundColor: Colors.green,
             colorText: Colors.white,
+            duration: const Duration(seconds: 3),
           );
 
           Get.offAllNamed('/home');
           break;
 
         case Failure():
-         
           final error = result.message;
-          final code = result.code;
 
-          errorMessage.value = '❌ $error\n🔢 Code: ${code ?? 'N/A'}';
+          Get.defaultDialog(
+            title: 'Oops',
+            titleStyle: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
+            ),
+            middleText: error.isNotEmpty ? error : 'Invalid credentials',
+            middleTextStyle: const TextStyle(
+              fontSize: 16,
+              color: Colors.black87,
+            ),
+            textConfirm: 'Okay',
+            confirmTextColor: Colors.white,
 
-          // Show error dialog
-          await result.showApiErrorDialog();
+            buttonColor: Colors.blue,
+            onConfirm: Get.back,
+            barrierDismissible: false,
+            radius: 12,
+          );
+
           break;
       }
     } catch (e) {
       errorMessage.value = 'Error: $e';
-      AppDialog.error('Something went wrong: $e');
+      Get.snackbar(
+        'Error',
+        'Something went wrong. Please try again.',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        duration: const Duration(seconds: 5),
+      );
     } finally {
       isLoading.value = false;
     }
