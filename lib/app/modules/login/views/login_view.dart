@@ -1,10 +1,11 @@
+// login_view.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:learn_getx2/app/modules/home/views/home_view.dart';
 import '../controllers/login_controller.dart';
 
 class LoginView extends GetView<LoginController> {
   const LoginView({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -19,6 +20,7 @@ class LoginView extends GetView<LoginController> {
               child: Center(
                 child: Column(
                   children: [
+                    // Image
                     SizedBox(
                       height: 200,
                       width: 300,
@@ -43,10 +45,36 @@ class LoginView extends GetView<LoginController> {
                     ),
                     const SizedBox(height: 10),
                     const Text(
-                      "Please enter your URL to continue",
+                      "Please enter your credentials to continue",
                       style: TextStyle(fontSize: 16, color: Colors.black),
                     ),
+
+                    // Error Message
+                    Obx(() {
+                      if (controller.errorMessage.value.isNotEmpty) {
+                        return Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.red.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: Colors.red),
+                            ),
+                            child: Text(
+                              controller.errorMessage.value,
+                              style: const TextStyle(color: Colors.red),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        );
+                      }
+                      return const SizedBox.shrink();
+                    }),
+
                     const SizedBox(height: 20),
+
+                    // Username
                     Padding(
                       padding: const EdgeInsets.all(20),
                       child: Container(
@@ -60,8 +88,9 @@ class LoginView extends GetView<LoginController> {
                           children: [
                             Expanded(
                               child: TextField(
+                                controller: controller.usernameController,
                                 decoration: const InputDecoration(
-                                  hintText: "Http://",
+                                  hintText: "Username",
                                   hintStyle: TextStyle(color: Colors.black),
                                   border: InputBorder.none,
                                   contentPadding: EdgeInsets.symmetric(
@@ -71,69 +100,79 @@ class LoginView extends GetView<LoginController> {
                               ),
                             ),
                             const SizedBox(width: 10),
-                            Padding(
-                              padding: const EdgeInsets.all(6),
-                              child: InkWell(
-                                onTap: () {
-                                  // Handle test connection
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('Testing connection...'),
-                                    ),
-                                  );
-                                },
-                                borderRadius: BorderRadius.circular(8),
-                                child: Container(
-                                  width: 100,
-                                  height: double.infinity,
-                                  decoration: BoxDecoration(
-                                    color: const Color(
-                                      0xFF055FC8,
-                                    ),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: const Center(
-                                    child: Text(
-                                      "Test Connection",
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    // Password Field
+                    Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Container(
+                        height: 56,
+                        decoration: BoxDecoration(
+                          border: Border.all(color: const Color(0xFFecf0f1)),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: TextField(
+                                controller: controller.passwordController,
+                                obscureText: true,
+                                decoration: const InputDecoration(
+                                  hintText: "Password",
+                                  hintStyle: TextStyle(color: Colors.black),
+                                  border: InputBorder.none,
+                                  contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 12,
                                   ),
                                 ),
                               ),
                             ),
-                            
+                            const SizedBox(width: 10),
                           ],
                         ),
                       ),
-                      
                     ),
-                    
-                    const SizedBox(height: 330),
+
+                    const SizedBox(height: 200),
+
+                    // Login Button
                     Padding(
                       padding: const EdgeInsets.only(left: 20, right: 20),
-                      child: InkWell(
-                        onTap: () {
-                          HomeView.open();
-                        },
-                        borderRadius: BorderRadius.circular(8),
-                        child: Container(
-                          width: double.infinity,
-                          height: 50,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(8),
-                            color: const Color(0xFF055FC8),
-                          ),
-                          child: const Center(
-                            child: Text(
-                              "Login",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
+                      child: Obx(
+                        () => InkWell(
+                         onTap: controller.isLoading.value ? null : controller.login,
+                          borderRadius: BorderRadius.circular(8),
+                          child: Container(
+                            width: double.infinity,
+                            height: 50,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(8),
+                              color: controller.isLoading.value
+                                  ? Colors.grey
+                                  : const Color(0xFF055FC8),
+                            ),
+                            child: Center(
+                              child: controller.isLoading.value
+                                  ? const SizedBox(
+                                      height: 20,
+                                      width: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: Colors.white,
+                                      ),
+                                    )
+                                  : const Text(
+                                      "Login",
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                      ),
+                                    ),
                             ),
                           ),
                         ),
@@ -144,6 +183,8 @@ class LoginView extends GetView<LoginController> {
               ),
             ),
             const SizedBox(height: 20),
+
+            // Footer
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -154,7 +195,6 @@ class LoginView extends GetView<LoginController> {
                 InkWell(
                   onTap: () {
                     // Handle Monakom logo tap
-                    // Could open URL or show info
                   },
                   child: SizedBox(
                     width: 100,

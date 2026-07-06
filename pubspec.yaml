@@ -36,6 +36,8 @@ dependencies:
   cupertino_icons: ^1.0.8
   get: ^4.7.3
   http: ^1.6.0
+  get_storage: ^2.1.1
+  dio: ^5.10.0
 
 dev_dependencies:
   flutter_test:
