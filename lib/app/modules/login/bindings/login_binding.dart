@@ -10,6 +10,8 @@ class LoginBinding extends Bindings {
   void dependencies() {
     Get.put<ApiClient>(ApiClient(), permanent: true);
     Get.put<ApiService>(ApiService(), permanent: true);
-    Get.lazyPut<LoginController>(() => LoginController());
+     Get.put<LoginController>(LoginController(), permanent: true);
+    
   }
+  
 }

@@ -12,6 +12,7 @@ sealed class Result<T> {
   String? get error => switch (this) {
     Success<T>() => null,
     Failure<T>(:final message) => message,
+
   };
 }
 
@@ -21,7 +22,6 @@ final class Success<T> extends Result<T> {
 
   const Success(this.data);
 }
-
 final class Failure<T> extends Result<T> {
   final int? code;
   final String message;

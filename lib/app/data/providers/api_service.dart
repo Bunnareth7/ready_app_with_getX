@@ -10,7 +10,6 @@ class ApiService extends GetxService {
     super.onInit();
     _apiClient = Get.find<ApiClient>();
   }
-
   //Returns Result<T>
   Future<Result<Map<String, dynamic>>> login(
     String username,
@@ -30,10 +29,11 @@ class ApiService extends GetxService {
       final body = response.data;
       print('📥 Response status: ${response.statusCode}');
       print('📥 Response data: $body');
+    
 
-     
       if (response.statusCode == 200) {
         print('✅ Login successful!');
+        
         return Success(body);
       }
 
@@ -42,7 +42,6 @@ class ApiService extends GetxService {
         message: body['error'] ?? body['message'] ?? 'Login failed',
       );
     } catch (e) {
-      
       print('❌ Error: $e');
       return Failure(message: e.toString());
     }

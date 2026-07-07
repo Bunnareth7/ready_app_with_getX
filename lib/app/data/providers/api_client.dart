@@ -17,12 +17,12 @@ class ApiClient {
           'Accept': 'application/json',
           'x-api-key': apiKey,
         },
-        // Accept all status codes
+        
         validateStatus: (status) => status != null,
       ),
     );
 
-    // Add interceptors
+    //interceptor
     _dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) {

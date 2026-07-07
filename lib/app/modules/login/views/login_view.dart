@@ -76,7 +76,11 @@ class LoginView extends GetView<LoginController> {
 
                     // Username
                     Padding(
-                     padding: const EdgeInsets.only(top: 10, left: 20, right: 20),
+                      padding: const EdgeInsets.only(
+                        top: 10,
+                        left: 20,
+                        right: 20,
+                      ),
                       child: Container(
                         height: 50,
                         decoration: BoxDecoration(
@@ -101,7 +105,6 @@ class LoginView extends GetView<LoginController> {
                                 ),
                               ),
                             ),
-                            
                           ],
                         ),
                       ),
@@ -109,7 +112,11 @@ class LoginView extends GetView<LoginController> {
 
                     // Password Field
                     Padding(
-                      padding: const EdgeInsets.only(top: 20, left: 20, right: 20),
+                      padding: const EdgeInsets.only(
+                        top: 20,
+                        left: 20,
+                        right: 20,
+                      ),
                       child: Container(
                         height: 50,
                         decoration: BoxDecoration(
@@ -135,6 +142,20 @@ class LoginView extends GetView<LoginController> {
                                 ),
                               ),
                             ),
+
+                            Obx(
+                              () => IconButton(
+                                onPressed: () {
+                                  controller.togglePasswordVisibility();
+                                },
+                                icon: Icon(
+                                  controller.isPasswordVisible.value
+                                      ? Icons.visibility
+                                      : Icons.visibility_off,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ),
                             const SizedBox(width: 10),
                           ],
                         ),
@@ -148,7 +169,9 @@ class LoginView extends GetView<LoginController> {
                       padding: const EdgeInsets.only(left: 20, right: 20),
                       child: Obx(
                         () => InkWell(
-                         onTap: controller.isLoading.value ? null : controller.login,
+                          onTap: controller.isLoading.value
+                              ? null
+                              : controller.login,
                           borderRadius: BorderRadius.circular(8),
                           child: Container(
                             width: double.infinity,
@@ -187,7 +210,6 @@ class LoginView extends GetView<LoginController> {
               ),
             ),
             const SizedBox(height: 20),
-
             // Footer
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -197,19 +219,18 @@ class LoginView extends GetView<LoginController> {
                   style: TextStyle(fontSize: 12, color: Color(0xFF666666)),
                 ),
                 SizedBox(
-                    width: 100,
-                    height: 30,
-                    child: Image.network(
-                      "https://media.licdn.com/dms/image/v2/D560BAQF9R5z5OVKP2Q/company-logo_200_200/B56ZmUKgYmIAAI-/0/1759127407018?e=2147483647&v=beta&t=WBpVcZ7UUkjsWjcbzX5JxN56lBqCyKGJTP748D9hg0M",
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          color: Colors.grey[200],
-                          child: const Icon(Icons.business, size: 30),
-                        );
-                      },
-                    ),
-                  
+                  width: 100,
+                  height: 30,
+                  child: Image.network(
+                    "https://media.licdn.com/dms/image/v2/D560BAQF9R5z5OVKP2Q/company-logo_200_200/B56ZmUKgYmIAAI-/0/1759127407018?e=2147483647&v=beta&t=WBpVcZ7UUkjsWjcbzX5JxN56lBqCyKGJTP748D9hg0M",
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        color: Colors.grey[200],
+                        child: const Icon(Icons.business, size: 30),
+                      );
+                    },
+                  ),
                 ),
               ],
             ),
