@@ -1,4 +1,3 @@
-// lib/app/modules/login/controllers/login_controller.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
@@ -7,14 +6,13 @@ import 'package:learn_getx2/app/data/providers/api_service.dart';
 
 class LoginController extends GetxController {
   final ApiService _apiService = Get.find<ApiService>();
-   final GetStorage _storage = GetStorage(); 
+  final GetStorage _storage = GetStorage();
 
   final usernameController = TextEditingController();
   final passwordController = TextEditingController();
 
   var isLoading = false.obs;
   var errorMessage = ''.obs;
-
   var isPasswordVisible = false.obs;
 
   // Login using Result<T>
@@ -45,7 +43,11 @@ class LoginController extends GetxController {
       switch (result) {
         case Success():
           final token = result.data['access_token'];
+          final storage = GetStorage();
+          storage.write('access_token', token);
+          print('✅ Token saved to storage');
           print('✅ Token: $token');
+
           //success snack ba
           Get.snackbar(
             'Success',
@@ -55,13 +57,11 @@ class LoginController extends GetxController {
             colorText: Colors.white,
             duration: const Duration(seconds: 3),
           );
-
           Get.offAllNamed('/home');
           break;
         //Fail dialog
         case Failure():
           final error = result.message;
-
           Get.defaultDialog(
             title: 'Oops',
             titleStyle: const TextStyle(
@@ -81,8 +81,8 @@ class LoginController extends GetxController {
             onConfirm: Get.back,
             barrierDismissible: false,
             radius: 12,
+            
           );
-
           break;
       }
     } catch (e) {
@@ -99,6 +99,7 @@ class LoginController extends GetxController {
       isLoading.value = false;
     }
   }
+
   @override
   void onClose() {
     usernameController.dispose();
@@ -109,7 +110,8 @@ class LoginController extends GetxController {
   void togglePasswordVisibility() {
     isPasswordVisible.value = !isPasswordVisible.value;
   }
-   bool isLoggedIn() {
+
+  bool isLoggedIn() {
     final token = _storage.read('access_token');
     return token != null && token.isNotEmpty;
   }
@@ -120,9 +122,11 @@ class LoginController extends GetxController {
   }
 
   //Logout
+
   void logout() {
     _storage.remove('access_token');
     _storage.remove('refresh_token');
+    //Navigate to Login
     Get.offAllNamed('/login');
     Get.snackbar(
       'Logged Out',

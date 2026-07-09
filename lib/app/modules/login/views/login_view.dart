@@ -1,4 +1,3 @@
-// login_view.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/login_controller.dart';
@@ -24,8 +23,8 @@ class LoginView extends GetView<LoginController> {
                     SizedBox(
                       height: 150,
                       width: 300,
-                      child: Image.network(
-                        "https://img.magnific.com/free-vector/people-line-waiting-pay_23-2148199795.jpg?semt=ais_hybrid&w=740&q=80",
+                      child: Image.asset(
+                        'assets/images/people_inline.png',
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) {
                           return Container(
@@ -88,19 +87,16 @@ class LoginView extends GetView<LoginController> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Expanded(
-                              child: Center(
-                                child: TextField(
-                                  controller: controller.usernameController,
-                                  decoration: const InputDecoration(
-                                    hintText: "Username",
-                                    hintStyle: TextStyle(color: Colors.grey),
-                                    border: InputBorder.none,
-                                    contentPadding: EdgeInsets.symmetric(
-                                      horizontal: 12,
-                                    ),
+                              child: TextField(
+                                controller: controller.usernameController,
+                                decoration: const InputDecoration(
+                                  hintText: "Username",
+                                  hintStyle: TextStyle(color: Colors.grey),
+                                  border: InputBorder.none,
+                                  contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 12,
                                   ),
                                 ),
                               ),
@@ -110,7 +106,6 @@ class LoginView extends GetView<LoginController> {
                       ),
                     ),
 
-                    // Password Field
                     Padding(
                       padding: const EdgeInsets.only(
                         top: 20,
@@ -124,30 +119,30 @@ class LoginView extends GetView<LoginController> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Expanded(
-                              child: Center(
-                                child: TextField(
+                              child: Obx(
+                                () => TextField(
                                   controller: controller.passwordController,
-                                  obscureText: true,
-                                  decoration: const InputDecoration(
+                                  obscureText:
+                                      !controller.isPasswordVisible.value,
+                                  decoration: InputDecoration(
                                     hintText: "Password",
-                                    hintStyle: TextStyle(color: Colors.grey),
+                                    hintStyle: const TextStyle(
+                                      color: Colors.grey,
+                                    ),
                                     border: InputBorder.none,
-                                    contentPadding: EdgeInsets.symmetric(
+                                    contentPadding: const EdgeInsets.symmetric(
                                       horizontal: 12,
                                     ),
                                   ),
                                 ),
                               ),
                             ),
-
+                            //==>Eye Close Button
                             Obx(
                               () => IconButton(
-                                onPressed: () {
-                                  controller.togglePasswordVisibility();
-                                },
+                                onPressed: controller.togglePasswordVisibility,
                                 icon: Icon(
                                   controller.isPasswordVisible.value
                                       ? Icons.visibility
@@ -156,14 +151,12 @@ class LoginView extends GetView<LoginController> {
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 10),
                           ],
                         ),
                       ),
                     ),
 
                     const SizedBox(height: 360),
-
                     // Login Button
                     Padding(
                       padding: const EdgeInsets.only(left: 20, right: 20),
@@ -219,10 +212,10 @@ class LoginView extends GetView<LoginController> {
                   style: TextStyle(fontSize: 12, color: Color(0xFF666666)),
                 ),
                 SizedBox(
-                  width: 100,
+                  width: 80,
                   height: 30,
-                  child: Image.network(
-                    "https://media.licdn.com/dms/image/v2/D560BAQF9R5z5OVKP2Q/company-logo_200_200/B56ZmUKgYmIAAI-/0/1759127407018?e=2147483647&v=beta&t=WBpVcZ7UUkjsWjcbzX5JxN56lBqCyKGJTP748D9hg0M",
+                  child: Image.asset(
+                    "assets/images/MONOKOM_LOGO1.png",
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) {
                       return Container(

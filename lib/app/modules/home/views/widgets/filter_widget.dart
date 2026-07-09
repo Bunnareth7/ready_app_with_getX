@@ -1,50 +1,50 @@
-// filter_widget.dart - TabBar alternative
+// lib/app/modules/home/views/widgets/filter_widget.dart
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:learn_getx2/app/modules/home/controllers/home_controller.dart';
 
 class FilterWidget extends StatelessWidget {
   const FilterWidget({super.key});
+
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Container(
-        height: 35,
-        decoration: BoxDecoration(
-          color: const Color(0xFFecf0f1),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: DefaultTabController(
-          length: 5,
-          child: TabBar(
-            tabs: const [
-              Tab(text: 'All'),
-              Tab(text: 'Pickup'),
-              Tab(text: 'Walk-in'),
-              Tab(text: 'Delivery'),
-              Tab(text: 'Takeaway'),
-            ],
-            labelColor: Colors.black,
-            unselectedLabelColor: Colors.black,
-            labelStyle: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-            ),
-            unselectedLabelStyle: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-            ),
-            indicator: BoxDecoration(
-              color: Colors.white,
+    final HomeController controller = Get.find<HomeController>();
+
+    return Obx(() {
+      if (controller.tabTitles.isEmpty) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Container(
+            height: 40,
+            decoration: BoxDecoration(
+              color: const Color(0xFFecf0f1),
               borderRadius: BorderRadius.circular(8),
             ),
-            indicatorSize: TabBarIndicatorSize.tab,
-            dividerColor: Colors.transparent,
-            padding: EdgeInsets.all(6),
-            labelPadding: EdgeInsets.zero,
-            isScrollable: false,
+            child: const Center(
+              child: SizedBox(
+                height: 20,
+                width: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Colors.grey,
+                ),
+              ),
+            ),
           ),
+        );
+      }
+
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Container(
+          height: 35,
+          decoration: BoxDecoration(
+            color: const Color(0xFFecf0f1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: const SizedBox.shrink(),
         ),
-      ),
-    );
+      );
+    });
   }
 }

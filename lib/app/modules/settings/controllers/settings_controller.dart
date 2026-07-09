@@ -17,22 +17,8 @@ class SettingsController extends GetxController {
   // Notification settings
   var notificationsEnabled = true.obs;
 
-  @override
-  void onInit() {
-    super.onInit();
-    // Load saved preferences
-    //_loadPreferences();
-  }
 
-  @override
-  void onReady() {
-    super.onReady();
-  }
 
-  @override
-  void onClose() {
-    super.onClose();
-  }
 
   // Load saved preferences from storage
   // void _loadPreferences() {
@@ -97,7 +83,7 @@ class SettingsController extends GetxController {
     // Show confirm
     Get.defaultDialog(
       title: 'Logout',
-      middleText: 'Are you sure you want to logout?',
+      middleText: 'Are you sure you want to Logout?',
       textConfirm: 'Yes',
       textCancel: 'No',
       confirmTextColor: Colors.white,
