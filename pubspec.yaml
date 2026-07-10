@@ -65,6 +65,7 @@ flutter:
   assets:
     - assets/images/people_inline.png
     - assets/images/MONOKOM_LOGO1.png
+    - assets/images/TERMINAL_LOGO.png
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

@@ -11,6 +11,7 @@ class ApiService extends GetxService {
     super.onInit();
     _apiClient = Get.find<ApiClient>();
   }
+
   //LOGIN
   Future<Result<Map<String, dynamic>>> login(
     String username,
@@ -71,7 +72,7 @@ class ApiService extends GetxService {
     }
   }
 
-  //GET ORDER LIST 
+  //GET ORDER LIST
   Future<Result<Map<String, dynamic>>> getOrderList({
     required String terminalId,
     int page = 0,
@@ -138,4 +139,58 @@ class ApiService extends GetxService {
       return Failure(message: e.toString());
     }
   }
+
+
+  Future<Result<Map<String, dynamic>>> getCompanies() async {
+  try {
+    print('📤 Getting companies...');
+
+    final response = await _apiClient.get(
+      'adm/v1/api/user/user-company',
+      baseUrl: ApiClient.baseUrlApi,
+    );
+
+    print('📥 Status: ${response.statusCode}');
+    print('📥 Full Response: ${response.data}');
+    print('📥 Response Type: ${response.data.runtimeType}');
+
+    if (response.statusCode == 200) {
+      return Success(response.data as Map<String, dynamic>);
+    }
+
+    return Failure(
+      message: response.data['message'] ?? 'Failed to get companies',
+    );
+  } catch (e) {
+    print('❌ Error getting companies: $e');
+    return Failure(message: e.toString());
+  }
+}
+
+// ===== GET TERMINALS =====
+Future<Result<Map<String, dynamic>>> getTerminals(String company) async {
+  try {
+    print('📤 Getting terminals for: $company');
+
+    final response = await _apiClient.get(
+      'adm/v1/api/user/user-td-terminal',
+      baseUrl: ApiClient.baseUrlApi,
+    );
+
+    print('📥 Status: ${response.statusCode}');
+    print('📥 Full Response: ${response.data}');
+    print('📥 Response Type: ${response.data.runtimeType}');
+
+    if (response.statusCode == 200) {
+      return Success(response.data as Map<String, dynamic>);
+    }
+
+    return Failure(
+      message: response.data['message'] ?? 'Failed to get terminals',
+    );
+  } catch (e) {
+    print('❌ Error getting terminals: $e');
+    return Failure(message: e.toString());
+  }
+}
 }

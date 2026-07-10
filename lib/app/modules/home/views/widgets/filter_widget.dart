@@ -8,7 +8,6 @@ class FilterWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final HomeController controller = Get.find<HomeController>();
-
     return Obx(() {
       if (controller.tabTitles.isEmpty) {
         return Padding(
@@ -32,7 +31,6 @@ class FilterWidget extends StatelessWidget {
           ),
         );
       }
-
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Container(

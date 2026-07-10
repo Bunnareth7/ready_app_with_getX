@@ -2,10 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'app/routes/app_pages.dart';
+import 'app/data/providers/api_client.dart';
+import 'app/data/providers/api_service.dart';
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
   // Initialize GetStorage
   await GetStorage.init();
+
+  // Register global services directly here — no separate binding file needed.
+  // Order matters: ApiClient first, ApiService second (ApiService.onInit()
+  // calls Get.find<ApiClient>()).
+  Get.put<ApiClient>(ApiClient(), permanent: true);
+  Get.put<ApiService>(ApiService(), permanent: true);
+
   runApp(const MyApp());
 }
 

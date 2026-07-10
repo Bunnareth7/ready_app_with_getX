@@ -10,6 +10,7 @@ class ApiClient {
   static const String baseUrlGateway = 'https://uat.monakom.com/gateway/';
   static const String baseUrlApi = 'https://uat.monakom.com/216/erp_cloud/';
   static const String apiKey = '6NpyIrfdrhGGWFcoSKzydv4HprQ4qPmHq7ylz5XQ6mI';
+  static const String terminalByCompany = "https://uat.monakom.com/216/erp_cloud/";
 
   ApiClient() {
     _dio = Dio(
@@ -100,5 +101,8 @@ class ApiClient {
 
     final response = await dio.get(endpoint);
     return response;
+
+    
   }
+  
 }

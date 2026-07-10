@@ -65,9 +65,9 @@ class HomeView extends GetView<HomeController> {
     final controller = Get.find<HomeController>();
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 20,),
       child: Container(
-        height: 35,
+        height: 30,
         width: double.infinity,
         decoration: BoxDecoration(
           color: const Color(0xFFecf0f1),
@@ -133,7 +133,7 @@ class HomeView extends GetView<HomeController> {
             onTap: () {
               SettingsView.open();
             },
-            child: const Icon(Icons.settings_outlined, color: Colors.black),
+            child: const Icon(Icons.settings_outlined, color: Colors.black54),
           ),
         ],
       ),

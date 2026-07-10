@@ -45,7 +45,7 @@ class SettingsView extends GetView<SettingsController> {
                       'Languages',
                       style: TextStyle(
                         fontSize: 18,
-                        fontWeight: FontWeight.w500,
+                        fontWeight: FontWeight.w400,
                       ),
                     ),
                   ),
@@ -61,7 +61,6 @@ class SettingsView extends GetView<SettingsController> {
               ),
             ),
           ),
-
           // LOgout
           Padding(
             padding: const EdgeInsets.only(top: 8.0, right: 20, left: 20),
@@ -98,7 +97,7 @@ class SettingsView extends GetView<SettingsController> {
                       Padding(
                         padding: EdgeInsets.only(left: 15),
                         child: Text(
-                          "Log Out",
+                          "Logout",
                           style: TextStyle(
                             fontSize: 18,
                             color: Colors.red,
