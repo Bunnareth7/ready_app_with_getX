@@ -1,4 +1,3 @@
-// lib/app/modules/home/views/widgets/filter_widget.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:learn_getx2/app/modules/home/controllers/home_controller.dart';
@@ -15,7 +14,7 @@ class FilterWidget extends StatelessWidget {
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Container(
-            height: 40,
+            height: 35,
             decoration: BoxDecoration(
               color: const Color(0xFFecf0f1),
               borderRadius: BorderRadius.circular(8),

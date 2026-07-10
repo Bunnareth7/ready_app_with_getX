@@ -1,7 +1,5 @@
-// food_images.dart
 import 'package:flutter/material.dart';
 import 'package:learn_getx2/app/data/models/food_model.dart';
-
 
 class FoodImages extends StatelessWidget {
   final List<FoodModel> foods;
@@ -17,7 +15,9 @@ class FoodImages extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final int displayCount = foods.length > maxImages ? maxImages : foods.length;
+    final int displayCount = foods.length > maxImages
+        ? maxImages
+        : foods.length;
     final List<FoodModel> displayFoods = foods.take(displayCount).toList();
 
     return SizedBox(
@@ -32,9 +32,7 @@ class FoodImages extends StatelessWidget {
             height: imageSize,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(2),
-              border: Border.all(
-                color: const Color(0xFFecf0f1),
-              ),
+              border: Border.all(color: const Color(0xFFecf0f1)),
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(4),
