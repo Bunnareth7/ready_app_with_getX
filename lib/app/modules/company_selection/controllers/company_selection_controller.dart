@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
@@ -16,6 +15,21 @@ class CompanySelectionController extends GetxController {
   var isLoading = false.obs;
   var errorMessage = ''.obs;
   var isButtonEnabled = false.obs;
+
+  // Extract label for readable display
+  String _extractLabel(dynamic item, List<String> preferredKeys) {
+    if (item is String) return item;
+
+    if (item is Map) {
+      for (final key in preferredKeys) {
+        final value = item[key];
+        if (value != null && value.toString().isNotEmpty) {
+          return value.toString();
+        }
+      }
+    }
+    return item.toString();
+  }
 
   @override
   void onInit() {
@@ -42,21 +56,14 @@ class CompanySelectionController extends GetxController {
 
           List<String> companyList = [];
 
-          if (data is List) {
-            companyList = data.map((e) => e.toString()).toList();
-          } else if (data is Map<String, dynamic>) {
-            if (data.containsKey('data') && data['data'] is List) {
-              final list = data['data'] as List;
-              companyList = list.map((e) => e.toString()).toList();
-            } else if (data.containsKey('companyList') &&
-                data['companyList'] is List) {
-              final list = data['companyList'] as List;
-              companyList = list.map((e) => e.toString()).toList();
-            } else if (data.containsKey('companies') &&
-                data['companies'] is List) {
-              final list = data['companies'] as List;
-              companyList = list.map((e) => e.toString()).toList();
-            }
+          if (data is Map<String, dynamic> && data['data'] is List) {
+            final list = data['data'] as List;
+            companyList = list
+                .map(
+                  (e) =>
+                      _extractLabel(e, ['companyCode', 'name', 'code', 'id']),
+                )
+                .toList();
           }
 
           if (companyList.isNotEmpty) {
@@ -96,21 +103,11 @@ class CompanySelectionController extends GetxController {
 
           List<String> terminalList = [];
 
-          if (data is List) {
-            terminalList = data.map((e) => e.toString()).toList();
-          } else if (data is Map<String, dynamic>) {
-            if (data.containsKey('data') && data['data'] is List) {
-              final list = data['data'] as List;
-              terminalList = list.map((e) => e.toString()).toList();
-            } else if (data.containsKey('terminalList') &&
-                data['terminalList'] is List) {
-              final list = data['terminalList'] as List;
-              terminalList = list.map((e) => e.toString()).toList();
-            } else if (data.containsKey('terminals') &&
-                data['terminals'] is List) {
-              final list = data['terminals'] as List;
-              terminalList = list.map((e) => e.toString()).toList();
-            }
+          if (data is Map<String, dynamic> && data['data'] is List) {
+            final list = data['data'] as List;
+            terminalList = list
+                .map((e) => _extractLabel(e, ['terminalName']))
+                .toList();
           }
 
           if (terminalList.isNotEmpty) {
@@ -163,7 +160,7 @@ class CompanySelectionController extends GetxController {
 
     Get.snackbar(
       'Success',
-      'Connected to ${selectedCompany.value} - ${selectedTerminal.value}',
+      'Connected to  ${selectedTerminal.value}',
       snackPosition: SnackPosition.TOP,
       backgroundColor: Colors.green,
       colorText: Colors.white,

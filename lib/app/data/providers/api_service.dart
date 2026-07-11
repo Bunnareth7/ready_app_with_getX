@@ -4,7 +4,6 @@ import '../providers/api_client.dart';
 
 class ApiService extends GetxService {
   late ApiClient _apiClient;
-  final String terminalId = 'KOICXDEMO';
 
   @override
   void onInit() {
@@ -40,7 +39,9 @@ class ApiService extends GetxService {
   }
 
   //GET ORDER TYPES
-  Future<Result<List<String>>> getOrderTypes() async {
+  Future<Result<List<String>>> getOrderTypes({
+    required String terminalId,
+  }) async {
     try {
       print('📤 Getting order types...');
 
@@ -140,57 +141,161 @@ class ApiService extends GetxService {
     }
   }
 
+  // ===== GET CURRENT USER =====
+
+  Future<Result<Map<String, dynamic>>> getCurrentUser() async {
+    try {
+      print('📤 Getting current user...');
+
+      final response = await _apiClient.get(
+        'adm/v1/api/user/info',
+        baseUrl: ApiClient.baseUrlApi,
+      );
+
+      print('📥 Status: ${response.statusCode}');
+      print('📥 Full Response: ${response.data}');
+      print('📥 Response Type: ${response.data.runtimeType}');
+
+      if (response.statusCode == 200) {
+        final dynamic data = response.data;
+        if (data is Map<String, dynamic>) {
+          return Success(data);
+        }
+        return Failure(
+          message: 'Unexpected response format: ${data.runtimeType}',
+        );
+      }
+
+      return Failure(
+        message: response.data['message'] ?? 'Failed to get current user',
+      );
+    } catch (e) {
+      print('❌ Error getting current user: $e');
+      return Failure(message: e.toString());
+    }
+  }
+
+  String? _extractUserId(Map<String, dynamic> userInfo) {
+    for (final key in ['id', 'userId', 'uuid', 'user_id']) {
+      final value = userInfo[key];
+      if (value != null && value.toString().isNotEmpty) {
+        return value.toString();
+      }
+    }
+    // Some APIs nest it, e.g. {"data": {"id": "..."}}
+    final nested = userInfo['data'];
+    if (nested is Map<String, dynamic>) {
+      return _extractUserId(nested);
+    }
+    return null;
+  }
+
+  // ===== GET COMPANIES =====
 
   Future<Result<Map<String, dynamic>>> getCompanies() async {
-  try {
-    print('📤 Getting companies...');
+    try {
+      print('📤 Getting current user (for ID)...');
+      final userResult = await getCurrentUser();
 
-    final response = await _apiClient.get(
-      'adm/v1/api/user/user-company',
-      baseUrl: ApiClient.baseUrlApi,
-    );
+      if (userResult.isFailure) {
+        return Failure(
+          message:
+              'Could not resolve user ID before fetching companies: '
+              '${userResult.error}',
+        );
+      }
 
-    print('📥 Status: ${response.statusCode}');
-    print('📥 Full Response: ${response.data}');
-    print('📥 Response Type: ${response.data.runtimeType}');
+      final userInfo = userResult.data!;
+      final userId = _extractUserId(userInfo);
 
-    if (response.statusCode == 200) {
-      return Success(response.data as Map<String, dynamic>);
+      if (userId == null) {
+        print('❌ Could not find a user ID field in: $userInfo');
+        return Failure(message: 'User ID not found in /user/info response');
+      }
+
+      print('📤 Getting companies for user: $userId');
+
+      final response = await _apiClient.get(
+        'adm/v1/api/user/user-company/$userId',
+        baseUrl: ApiClient.baseUrlApi,
+      );
+
+      print('📥 Status: ${response.statusCode}');
+      print('📥 Full Response: ${response.data}');
+      print('📥 Response Type: ${response.data.runtimeType}');
+
+      if (response.statusCode == 200) {
+        final dynamic data = response.data;
+        if (data is Map<String, dynamic>) {
+          return Success(data);
+        }
+        if (data is List) {
+          return Success({'data': data});
+        }
+        return Failure(
+          message: 'Unexpected response format: ${data.runtimeType}',
+        );
+      }
+
+      return Failure(
+        message: response.data['message'] ?? 'Failed to get companies',
+      );
+    } catch (e) {
+      print('❌ Error getting companies: $e');
+      return Failure(message: e.toString());
     }
-
-    return Failure(
-      message: response.data['message'] ?? 'Failed to get companies',
-    );
-  } catch (e) {
-    print('❌ Error getting companies: $e');
-    return Failure(message: e.toString());
   }
-}
+  // ===== GET TERMINALS =====
+  Future<Result<Map<String, dynamic>>> getTerminals(String company) async {
+    try {
+      print('📤 Getting current user (for ID)...');
+      final userResult = await getCurrentUser();
 
-// ===== GET TERMINALS =====
-Future<Result<Map<String, dynamic>>> getTerminals(String company) async {
-  try {
-    print('📤 Getting terminals for: $company');
+      if (userResult.isFailure) {
+        return Failure(
+          message:
+              'Could not resolve user ID before fetching terminals: '
+              '${userResult.error}',
+        );
+      }
+      final userInfo = userResult.data!;
+      final userId = _extractUserId(userInfo);
 
-    final response = await _apiClient.get(
-      'adm/v1/api/user/user-td-terminal',
-      baseUrl: ApiClient.baseUrlApi,
-    );
+      if (userId == null) {
+        print('❌ Could not find a user ID field in: $userInfo');
+        return Failure(message: 'User ID not found in /user/info response');
+      }
 
-    print('📥 Status: ${response.statusCode}');
-    print('📥 Full Response: ${response.data}');
-    print('📥 Response Type: ${response.data.runtimeType}');
+      print('📤 Getting terminals for user: $userId, company: $company');
 
-    if (response.statusCode == 200) {
-      return Success(response.data as Map<String, dynamic>);
+      final response = await _apiClient.get(
+        'adm/v1/api/user/user-td-terminal/$userId?companyCode=$company',
+        baseUrl: ApiClient.baseUrlApi,
+      );
+
+      print('📥 Status: ${response.statusCode}');
+      print('📥 Full Response: ${response.data}');
+      print('📥 Response Type: ${response.data.runtimeType}');
+
+      if (response.statusCode == 200) {
+        final dynamic data = response.data;
+        if (data is Map<String, dynamic>) {
+          return Success(data);
+        }
+        if (data is List) {
+          return Success({'data': data});
+        }
+        return Failure(
+          message: 'Unexpected response format: ${data.runtimeType}',
+        );
+      }
+
+      return Failure(
+        message: response.data['message'] ?? 'Failed to get terminals',
+      );
+    } catch (e) {
+      print('❌ Error getting terminals: $e');
+      return Failure(message: e.toString());
     }
-
-    return Failure(
-      message: response.data['message'] ?? 'Failed to get terminals',
-    );
-  } catch (e) {
-    print('❌ Error getting terminals: $e');
-    return Failure(message: e.toString());
   }
-}
 }

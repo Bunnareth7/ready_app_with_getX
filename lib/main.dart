@@ -11,9 +11,6 @@ void main() async {
   // Initialize GetStorage
   await GetStorage.init();
 
-  // Register global services directly here — no separate binding file needed.
-  // Order matters: ApiClient first, ApiService second (ApiService.onInit()
-  // calls Get.find<ApiClient>()).
   Get.put<ApiClient>(ApiClient(), permanent: true);
   Get.put<ApiService>(ApiService(), permanent: true);
 

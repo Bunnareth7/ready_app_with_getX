@@ -10,7 +10,8 @@ class ApiClient {
   static const String baseUrlGateway = 'https://uat.monakom.com/gateway/';
   static const String baseUrlApi = 'https://uat.monakom.com/216/erp_cloud/';
   static const String apiKey = '6NpyIrfdrhGGWFcoSKzydv4HprQ4qPmHq7ylz5XQ6mI';
-  static const String terminalByCompany = "https://uat.monakom.com/216/erp_cloud/";
+  //static const String terminalByCompany =
+  // "https://uat.monakom.com/216/erp_cloud/";
 
   ApiClient() {
     _dio = Dio(
@@ -66,11 +67,10 @@ class ApiClient {
     final response = await _dio.post(endpoint, data: data);
     return response;
   }
-
   // ===== GET REQUEST =====
   Future<dynamic> get(String endpoint, {String? baseUrl}) async {
     final url = baseUrl ?? baseUrlApi;
-    print('📤 GET: $url$endpoint');
+    //print('📤 GET: $url$endpoint');
 
     //Get token from storage
     final token = _storage.read('access_token');
@@ -97,7 +97,7 @@ class ApiClient {
       ),
     );
 
-    print('📤 Headers: $headers');
+    //print('📤 Headers: $headers');
 
     final response = await dio.get(endpoint);
     return response;

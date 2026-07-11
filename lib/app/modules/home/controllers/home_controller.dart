@@ -6,8 +6,11 @@ import 'package:learn_getx2/app/core/results/result.dart';
 
 class HomeController extends GetxController {
   final ApiService _apiService = Get.find<ApiService>();
+  final GetStorage _storage = GetStorage();
 
-  final String terminalId = 'KOICXDEMO';
+  // Set in onInit() from the terminal picked on the company/terminal
+  // selection screen (stored there under the 'terminalId' key).
+  late final String terminalId;
 
   var orders = <Order>[].obs;
   var selectedTabIndex = 0.obs;
@@ -35,6 +38,13 @@ class HomeController extends GetxController {
     final storage = GetStorage();
     final token = storage.read('access_token');
     print('🔍 Token in storage: ${token != null ? 'Yes' : 'No'}');
+
+    final storedTerminalId = _storage.read('terminalId');
+    terminalId = (storedTerminalId != null && storedTerminalId.toString().isNotEmpty)
+        ? storedTerminalId.toString()
+        : 'KOICXDEMO';
+    print('🔍 Using terminalId: $terminalId');
+
     super.onInit();
     loadOrderTypes();
   }
@@ -102,7 +112,7 @@ class HomeController extends GetxController {
 
 Future<void> loadOrderTypes() async {
   try {
-    final result = await _apiService.getOrderTypes();
+    final result = await _apiService.getOrderTypes(terminalId: terminalId);
     switch (result) {
       case Success():
         tabTitles.value = ['All', ...result.data];
@@ -124,4 +134,5 @@ Future<void> loadOrderTypes() async {
     loadOrders(); 
   }
 }
+
 }

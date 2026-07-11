@@ -7,7 +7,7 @@ class CompanySelectionView extends GetView<CompanySelectionController> {
 
   @override
   Widget build(BuildContext context) {
-    // ✅ Register controller if not already registered
+    // Register controller if not already registered
     if (!Get.isRegistered<CompanySelectionController>()) {
       Get.put<CompanySelectionController>(CompanySelectionController());
     }
@@ -52,7 +52,7 @@ class CompanySelectionView extends GetView<CompanySelectionController> {
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
             Image.asset(
-              'assets/images/TERMINAL_LOGO.png',
+              'assets/images/TERMINAL.png',
               fit: BoxFit.cover,
               width: 150,
               height: 120,
@@ -81,7 +81,6 @@ class CompanySelectionView extends GetView<CompanySelectionController> {
       ),
     );
   }
-
   Widget _buildCompanyDropdown() {
     return Obx(() {
       return Container(
@@ -163,9 +162,7 @@ class CompanySelectionView extends GetView<CompanySelectionController> {
             disabledBackgroundColor: Colors.grey[300],
           ),
           child: Text(
-            controller.isButtonEnabled.value
-                ? 'Connect to your terminal'
-                : 'Select company and terminal',
+            'Connect to your terminal',
             style: const TextStyle(
               fontSize: 16,
               color: Colors.white,

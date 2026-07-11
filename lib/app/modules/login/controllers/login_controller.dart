@@ -56,8 +56,8 @@ class LoginController extends GetxController {
             backgroundColor: Colors.green,
             colorText: Colors.white,
             duration: const Duration(seconds: 3),
-          );
-          Get.offAllNamed('/home');
+          );// Navigate to company selection
+          Get.offAllNamed('/company-selection');
           break;
         //Fail dialog
         case Failure():
