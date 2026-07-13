@@ -1,20 +1,20 @@
+import 'dart:async';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:learn_getx2/app/data/models/order_model.dart';
 import 'package:learn_getx2/app/data/providers/api_service.dart';
 import 'package:learn_getx2/app/core/results/result.dart';
+import 'package:learn_getx2/app/data/providers/mqtt_service.dart';
 
 class HomeController extends GetxController {
   final ApiService _apiService = Get.find<ApiService>();
-  final GetStorage _storage = GetStorage();
 
-  // Set in onInit() from the terminal picked on the company/terminal
-  // selection screen (stored there under the 'terminalId' key).
+  final GetStorage _storage = GetStorage();
+  final MqttService _mqttService = Get.find<MqttService>();
+  StreamSubscription? _mqttSubscription;
+
   late final String terminalId;
 
-  // Store location name, also picked from the same screen (stored under
-  // the 'storeName' key). Kept reactive (.obs) so the header can bind to
-  // it directly, in case it's ever updated later without a full rebuild.
   var storeName = ''.obs;
 
   var orders = <Order>[].obs;
@@ -34,7 +34,7 @@ class HomeController extends GetxController {
 
   void changeTab(int index) {
     selectedTabIndex.value = index;
-   // loadOrders();
+    // loadOrders();
   }
 
   @override
@@ -44,24 +44,28 @@ class HomeController extends GetxController {
     final token = storage.read('access_token');
     print('🔍 Token in storage: ${token != null ? 'Yes' : 'No'}');
 
-    // Pull the terminal selected on the previous screen. Falls back to the
-    // old demo value only if somehow nothing was saved (shouldn't normally
-    // happen, since company_selection always writes this before navigating
-    // here — but keeps Home from crashing if it's ever reached directly).
     final storedTerminalId = _storage.read('terminalId');
-    terminalId = (storedTerminalId != null && storedTerminalId.toString().isNotEmpty)
+    terminalId =
+        (storedTerminalId != null && storedTerminalId.toString().isNotEmpty)
         ? storedTerminalId.toString()
         : 'KOICXDEMO';
     print('🔍 Using terminalId: $terminalId');
 
     final storedStoreName = _storage.read('storeName');
-    storeName.value = (storedStoreName != null && storedStoreName.toString().isNotEmpty)
+    storeName.value =
+        (storedStoreName != null && storedStoreName.toString().isNotEmpty)
         ? storedStoreName.toString()
         : 'Unknown store';
     print('🔍 Using storeName: ${storeName.value}');
 
     super.onInit();
     loadOrderTypes();
+
+    // ====repace with real topic=====
+    _mqttService.subscribe('#'); 
+    _mqttSubscription = _mqttService.messages.listen((event) {
+      loadOrders();
+    });
   }
 
   Future<void> loadOrders() async {
@@ -90,29 +94,28 @@ class HomeController extends GetxController {
         size: 100,
       );
     }
-
     switch (result) {
-    case Success():
-    final data = result.data;
+      case Success():
+        final data = result.data;
 
-    // Extract server time 
-    final serverNow = data['timestamp'] != null
-        ? DateTime.fromMillisecondsSinceEpoch(
-            data['timestamp'] as int,
-            isUtc: true,
-          )
-        : DateTime.now().toUtc(); // fallback if timestamp is ever missing
+        // Extract server time
+        final serverNow = data['timestamp'] != null
+            ? DateTime.fromMillisecondsSinceEpoch(
+                data['timestamp'] as int,
+                isUtc: true,
+              )
+            : DateTime.now().toUtc(); // fallback if timestamp is ever missing
 
-    // Parse response - adjust based on actual API response
-    final List<dynamic> orderData =
-        data['data'] ?? data['list'] ?? data['tickets'] ?? [];
+        // Parse response - adjust based on actual API response
+        final List<dynamic> orderData =
+            data['data'] ?? data['list'] ?? data['tickets'] ?? [];
 
-    orders.value = orderData
-        .map((json) => Order.fromJson(json, serverNow))
-        .toList();
+        orders.value = orderData
+            .map((json) => Order.fromJson(json, serverNow))
+            .toList();
 
-    print('✅ Orders loaded: ${orders.length}');
-    break;
+        print('✅ Orders loaded: ${orders.length}');
+        break;
       case Failure():
         errorMessage.value = result.message;
         orders.value = [];
@@ -125,28 +128,34 @@ class HomeController extends GetxController {
 
   // tab titles from API
 
-Future<void> loadOrderTypes() async {
-  try {
-    final result = await _apiService.getOrderTypes(terminalId: terminalId);
-    switch (result) {
-      case Success():
-        tabTitles.value = ['All', ...result.data];
-        loadOrders(); 
-        break;
-      case Failure():
-        tabTitles.value = [
-          'All',
-          'Pickup',
-          'Walk-in',
-          'Delivery',
-          'Takeaway',
-        ];
-        loadOrders(); 
-        break;
+  Future<void> loadOrderTypes() async {
+    try {
+      final result = await _apiService.getOrderTypes(terminalId: terminalId);
+      switch (result) {
+        case Success():
+          tabTitles.value = ['All', ...result.data];
+          loadOrders();
+          break;
+        case Failure():
+          tabTitles.value = [
+            'All',
+            'Pickup',
+            'Walk-in',
+            'Delivery',
+            'Takeaway',
+          ];
+          loadOrders();
+          break;
+      }
+    } catch (e) {
+      tabTitles.value = ['All', 'Pickup', 'Walk-in', 'Delivery', 'Takeaway'];
+      loadOrders();
+       
     }
-  } catch (e) {
-    tabTitles.value = ['All', 'Pickup', 'Walk-in', 'Delivery', 'Takeaway'];
-    loadOrders(); 
+   @override
+    void onClose() {
+      _mqttSubscription?.cancel();
+      super.onClose();
+    }
   }
-}
 }

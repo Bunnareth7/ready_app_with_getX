@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import '../../../data/providers/api_service.dart';
+import '../../../data/providers/mqtt_service.dart';
 import '../../../core/results/result.dart';
 
 class CompanySelectionController extends GetxController {
   final GetStorage _storage = GetStorage();
   final ApiService _apiService = Get.find<ApiService>();
+  final MqttService _mqttService = Get.find<MqttService>();
 
   var selectedCompany = ''.obs;
   var selectedTerminal = ''.obs;
@@ -16,7 +18,6 @@ class CompanySelectionController extends GetxController {
   var errorMessage = ''.obs;
   var isButtonEnabled = false.obs;
 
-  // for whichever terminal the user picks.
   List<dynamic> _terminalItems = [];
 
   // Extract label for readable display
@@ -180,6 +181,8 @@ class CompanySelectionController extends GetxController {
     _storage.write('company', selectedCompany.value);
     _storage.write('terminalId', selectedTerminal.value);
     _storage.write('storeName', storeName);
+
+    _mqttService.connect(terminalId: selectedTerminal.value);
 
     Get.snackbar(
       'Success',
