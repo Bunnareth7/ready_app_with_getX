@@ -13,6 +13,7 @@ void main() async {
 
   Get.put<ApiClient>(ApiClient(), permanent: true);
   Get.put<ApiService>(ApiService(), permanent: true);
+  
 
   runApp(const MyApp());
 }

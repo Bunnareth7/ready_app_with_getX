@@ -12,6 +12,11 @@ class HomeController extends GetxController {
   // selection screen (stored there under the 'terminalId' key).
   late final String terminalId;
 
+  // Store location name, also picked from the same screen (stored under
+  // the 'storeName' key). Kept reactive (.obs) so the header can bind to
+  // it directly, in case it's ever updated later without a full rebuild.
+  var storeName = ''.obs;
+
   var orders = <Order>[].obs;
   var selectedTabIndex = 0.obs;
   var isLoading = false.obs;
@@ -39,11 +44,21 @@ class HomeController extends GetxController {
     final token = storage.read('access_token');
     print('🔍 Token in storage: ${token != null ? 'Yes' : 'No'}');
 
+    // Pull the terminal selected on the previous screen. Falls back to the
+    // old demo value only if somehow nothing was saved (shouldn't normally
+    // happen, since company_selection always writes this before navigating
+    // here — but keeps Home from crashing if it's ever reached directly).
     final storedTerminalId = _storage.read('terminalId');
     terminalId = (storedTerminalId != null && storedTerminalId.toString().isNotEmpty)
         ? storedTerminalId.toString()
         : 'KOICXDEMO';
     print('🔍 Using terminalId: $terminalId');
+
+    final storedStoreName = _storage.read('storeName');
+    storeName.value = (storedStoreName != null && storedStoreName.toString().isNotEmpty)
+        ? storedStoreName.toString()
+        : 'Unknown store';
+    print('🔍 Using storeName: ${storeName.value}');
 
     super.onInit();
     loadOrderTypes();
@@ -134,5 +149,4 @@ Future<void> loadOrderTypes() async {
     loadOrders(); 
   }
 }
-
 }

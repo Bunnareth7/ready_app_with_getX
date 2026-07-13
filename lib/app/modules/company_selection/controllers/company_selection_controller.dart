@@ -16,6 +16,9 @@ class CompanySelectionController extends GetxController {
   var errorMessage = ''.obs;
   var isButtonEnabled = false.obs;
 
+  // for whichever terminal the user picks.
+  List<dynamic> _terminalItems = [];
+
   // Extract label for readable display
   String _extractLabel(dynamic item, List<String> preferredKeys) {
     if (item is String) return item;
@@ -28,6 +31,7 @@ class CompanySelectionController extends GetxController {
         }
       }
     }
+
     return item.toString();
   }
 
@@ -92,6 +96,7 @@ class CompanySelectionController extends GetxController {
     isLoading.value = true;
     errorMessage.value = '';
     terminals.clear();
+    _terminalItems = [];
 
     try {
       final result = await _apiService.getTerminals(selectedCompany.value);
@@ -102,9 +107,11 @@ class CompanySelectionController extends GetxController {
           print('Terminals response: $data');
 
           List<String> terminalList = [];
+          List<dynamic> rawItems = [];
 
           if (data is Map<String, dynamic> && data['data'] is List) {
             final list = data['data'] as List;
+            rawItems = list;
             terminalList = list
                 .map((e) => _extractLabel(e, ['terminalName']))
                 .toList();
@@ -112,18 +119,22 @@ class CompanySelectionController extends GetxController {
 
           if (terminalList.isNotEmpty) {
             terminals.value = terminalList;
+            _terminalItems = rawItems;
             print('Terminals loaded: ${terminals.length}');
           } else {
             terminals.value = ['CXDemoKOI1', 'DEMOCAMBODIA'];
+            _terminalItems = [];
           }
           break;
 
         case Failure():
           terminals.value = ['CXDemoKOI1', 'DEMOCAMBODIA'];
+          _terminalItems = [];
           break;
       }
     } catch (e) {
       terminals.value = ['CXDemoKOI1', 'DEMOCAMBODIA'];
+      _terminalItems = [];
       print('Error loading terminals: $e');
     } finally {
       isLoading.value = false;
@@ -152,11 +163,23 @@ class CompanySelectionController extends GetxController {
         selectedCompany.isNotEmpty && selectedTerminal.isNotEmpty;
   }
 
+  dynamic _findSelectedTerminalItem() {
+    final index = terminals.indexOf(selectedTerminal.value);
+    if (index == -1 || index >= _terminalItems.length) return null;
+    return _terminalItems[index];
+  }
+
   void connect() {
     if (!isButtonEnabled.value) return;
 
+    final selectedItem = _findSelectedTerminalItem();
+    final storeName = selectedItem is Map
+        ? _extractLabel(selectedItem, ['storeName'])
+        : '';
+
     _storage.write('company', selectedCompany.value);
     _storage.write('terminalId', selectedTerminal.value);
+    _storage.write('storeName', storeName);
 
     Get.snackbar(
       'Success',

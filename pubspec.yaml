@@ -38,6 +38,7 @@ dependencies:
   http: ^1.6.0
   get_storage: ^2.1.1
   dio: ^5.10.0
+  mqtt5_client: ^4.17.1
 
 dev_dependencies:
   flutter_test:

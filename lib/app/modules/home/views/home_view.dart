@@ -1,3 +1,4 @@
+// lib/app/modules/home/views/home_view.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:learn_getx2/app/data/models/order_model.dart';
@@ -58,12 +59,13 @@ class HomeView extends GetView<HomeController> {
       ),
     );
   }
+
   // ===== TAB BAR =====
   Widget _buildTabBar() {
     final controller = Get.find<HomeController>();
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 20,),
       child: Container(
         height: 30,
         width: double.infinity,
@@ -73,6 +75,7 @@ class HomeView extends GetView<HomeController> {
         ),
         child: TabBar(
           tabs: controller.tabTitles.map((title) {
+           
             return Tab(text: title);
           }).toList(),
           labelColor: Colors.black,
@@ -91,8 +94,10 @@ class HomeView extends GetView<HomeController> {
           ),
           indicatorSize: TabBarIndicatorSize.tab,
           dividerColor: Colors.transparent,
-          labelPadding: const EdgeInsets.symmetric(horizontal: 14),
-          isScrollable: true,
+          labelPadding: const EdgeInsets.symmetric(
+            horizontal: 14,
+          ), 
+          isScrollable: true, 
           tabAlignment: TabAlignment.start,
           onTap: (index) {
             // Call changeTab method
@@ -105,22 +110,29 @@ class HomeView extends GetView<HomeController> {
 
   // ===== HEADER WIDGET =====
   Widget _buildHeader() {
+    final controller = Get.find<HomeController>();
+
     return Padding(
       padding: const EdgeInsets.only(left: 20, right: 20, top: 35),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Column(
+          Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
+              const Text(
                 "Store location",
                 style: TextStyle(fontSize: 14, color: Colors.grey),
               ),
-              SizedBox(height: 4),
-              Text(
-                "Tube Cafe 2k4",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w400),
+              const SizedBox(height: 4),
+              Obx(
+                () => Text(//Store name by terminal
+                  controller.storeName.value,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
               ),
             ],
           ),
@@ -138,7 +150,7 @@ class HomeView extends GetView<HomeController> {
   // ===== DIVIDER WIDGET =====
   Widget _buildDivider() {
     return Padding(
-      padding: const EdgeInsets.only(top: 10, bottom: 10),
+      padding: const EdgeInsets.only(top:  10, bottom: 10),
       child: Container(
         height: 2,
         width: double.infinity,
