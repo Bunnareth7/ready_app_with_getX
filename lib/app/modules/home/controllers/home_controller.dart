@@ -64,9 +64,11 @@ class HomeController extends GetxController {
     super.onInit();
     loadOrderTypes();
 
+    // Real topic, per terminal — matches client ID prefix pattern.
     subscribeTicketReadyMQTT();
   }
 
+  // Mirrors lead's subscribeMenuMessageMQTT() pattern.
   void subscribeTicketReadyMQTT() {
     print('Subscribing to MQTT topics...');
     const topic = 'TicketService_uat_TicketReadyBroadcast';
@@ -83,6 +85,7 @@ class HomeController extends GetxController {
     });
   }
 
+  // Mirrors lead's receiveMessageMQTT(topic, message) pattern.
   void receiveMessageMQTT(String topic, String message) {
     final decoded = jsonDecode(utf8.decode(message.codeUnits));
     print('📦 Decoded payload: $decoded');
@@ -90,6 +93,8 @@ class HomeController extends GetxController {
     _checkingTicketMessageReceived(receivedTicket);
   }
 
+  // Mirrors lead's _checkingTicketMessageReceived — find by ID, update in
+  // place if known, otherwise fall back to a full reload for new tickets.
   void _checkingTicketMessageReceived(OrderTicketMessage ticket) {
     final index = orders.indexWhere((o) => o.realId == ticket.id);
     if (index != -1) {
@@ -109,31 +114,42 @@ class HomeController extends GetxController {
   }
 
   // Toggles between RECALL and READY via the real REST endpoints
+  // (confirmed from Postman docs). Not MQTT — that's just for receiving
+  // updates, this is for sending them.
+  final Set<String> _togglingIds = {};
 
   Future<void> toggleOrderStatus(Order order) async {
-    final isReady = order.orderStatus.toUpperCase() == 'READY';
-    final companyId = _storage.read('company') ?? '';
+    if (_togglingIds.contains(order.realId)) return; // already in progress
+    _togglingIds.add(order.realId);
 
-    final result = isReady
-        ? await _apiService.markTicketRecall(
-            ticketId: order.realId,
-            companyId: companyId,
-            terminalId: terminalId,
-          )
-        : await _apiService.markTicketReady(
-            ticketId: order.realId,
-            companyId: companyId,
-            terminalId: terminalId,
-          );
+    try {
+      final currentStatus = order.orderStatus.toUpperCase();
+      final isReady = currentStatus == 'READY'; // only true READY can recall
+      final companyId = _storage.read('company') ?? '';
 
-    switch (result) {
-      case Success():
-        order.orderStatus = isReady ? 'RECALL' : 'READY';
-        orders.refresh();
-        break;
-      case Failure():
-        print('❌ Failed to update ticket: ${result.message}');
-        break;
+      final result = isReady
+          ? await _apiService.markTicketRecall(
+              ticketId: order.realId,
+              companyId: companyId,
+              terminalId: terminalId,
+            )
+          : await _apiService.markTicketReady(
+              ticketId: order.realId,
+              companyId: companyId,
+              terminalId: terminalId,
+            );
+
+      switch (result) {
+        case Success():
+          order.orderStatus = isReady ? 'RECALL' : 'READY';
+          orders.refresh();
+          break;
+        case Failure():
+          print('❌ Failed to update ticket: ${result.message}');
+          break;
+      }
+    } finally {
+      _togglingIds.remove(order.realId);
     }
   }
 

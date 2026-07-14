@@ -16,7 +16,7 @@ class Order {
   final String terminalCode;
   final String invoiceNo;
   final bool rawStatus;
-  String orderStatus; // real backend status e.g. RECALL, PREPARING, READY
+  String orderStatus; // real backend status: RECALL or READY
   final String realId; // actual UUID from the API — needed for status updates
 
   Order({
@@ -37,6 +37,11 @@ class Order {
     required this.realId,
   });
 
+  // ✅ Parse from API response
+  // NOTE: `serverNow` must come from the API response's top-level `timestamp`
+  // field (epoch millis, UTC). This ensures every terminal calculates
+  // elapsed time against the SAME clock, instead of each device's own
+  // (possibly wrong / different-timezone) local clock.
   factory Order.fromJson(Map<String, dynamic> json, DateTime serverNow) {
     print('📥 Parsing Order: $json');
 
@@ -54,7 +59,8 @@ class Order {
     // ✅ Status - convert boolean to string
     final rawStatus = json['status'] ?? false;
     final status = rawStatus == true ? 'Ready' : 'Pending';
-    final orderStatus = _safeString(json['orderStatus']) ?? 'PREPARING';
+    final rawOrderStatus = _safeString(json['orderStatus']) ?? 'READY';
+    final orderStatus = rawOrderStatus; // keep the TRUE value — no normalizing here
 
     // ✅ Time - parse timeoutTime or dateCreated
     final rawTime = _safeString(json['dateCreated']) ?? '';
@@ -122,7 +128,10 @@ class Order {
     return id.padLeft(2, '0');
   }
 
-  
+  // ✅ Format waiting time: "28m", "1h 42m"
+  // `serverNow` is the server's clock (from the API response's `timestamp`
+  // field), NOT DateTime.now(). This avoids drift/mismatch between
+  // terminals that have different device clocks or timezone settings.
   static String _formatWaitingTime(String timeStr, DateTime serverNow) {
     if (timeStr.isEmpty) return '0m';
 
@@ -132,6 +141,12 @@ class Order {
         return timeStr;
       }
 
+      // dateCreated comes with no timezone suffix, e.g. "2024-03-15T11:18:37"
+      // Force it to be parsed as UTC so it aligns with serverNow (also UTC).
+      //
+      // ⚠️ IMPORTANT: confirm with your backend whether `dateCreated` is
+      // actually UTC or Cambodia local time (UTC+7). If it's local time,
+      // see the alternate block commented below instead.
       String normalized = timeStr;
       if (!normalized.endsWith('Z') && !normalized.contains('+')) {
         normalized = '${normalized}Z';
@@ -156,7 +171,15 @@ class Order {
         }
       }
 
-     
+      // --- ALTERNATE VERSION if dateCreated is Cambodia LOCAL time, not UTC ---
+      // Replace the block above with this instead:
+      //
+      // final rawParsed = DateTime.tryParse(timeStr);
+      // if (rawParsed != null) {
+      //   final dateTimeUtc = rawParsed.subtract(const Duration(hours: 7));
+      //   final difference = serverNow.difference(dateTimeUtc);
+      //   ... (same hours/minutes logic as above)
+      // }
       // -------------------------------------------------------------------
 
       // If it's a number, treat as minutes
@@ -190,31 +213,17 @@ class Order {
   }
 
   // ✅ Status color based on status
+  // What to SHOW — PREPARING looks like READY (green "READY" badge).
+  String get displayStatus =>
+      orderStatus.toUpperCase() == 'PREPARING' ? 'READY' : orderStatus;
+
   Color get statusColor {
     final s = orderStatus.toLowerCase();
-    if (s == 'ready') return Color(0xFF0BB20B);
-    if (s == 'recall') return Color(0xFFF1BD00);
-    if (s == 'preparing') return Color(0xFFCCCCCC);
-    if (s == 'done') return Colors.blue;
-    if (s == 'expired') return Colors.red;
+    if (s == 'ready' || s == 'preparing') return Color(0xFF0BB20B);
+    if (s == 'recall') return Colors.orange;
     return Colors.grey;
   }
 
-  // ✅ Text color for status badge
-  Color get textColors {
-    final lowerStatus = status.toLowerCase();
-    if (lowerStatus == 'ready' || lowerStatus == 'true') {
-      return Colors.white;
-    } else if (lowerStatus == 'pending') {
-      return Colors.white;
-    } else if (lowerStatus == 'preparing') {
-      return Colors.white;
-    } else if (lowerStatus == 'done') {
-      return Colors.white;
-    } else if (lowerStatus == 'expired') {
-      return Colors.white;
-    } else {
-      return Colors.white;
-    }
-  }
+  // ✅ Text color for status badge — always white regardless of status
+  Color get textColors => Colors.white;
 }

@@ -65,7 +65,7 @@ class HomeView extends GetView<HomeController> {
     final controller = Get.find<HomeController>();
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 20,),
       child: Container(
         height: 30,
         width: double.infinity,
@@ -75,6 +75,7 @@ class HomeView extends GetView<HomeController> {
         ),
         child: TabBar(
           tabs: controller.tabTitles.map((title) {
+           
             return Tab(text: title);
           }).toList(),
           labelColor: Colors.black,
@@ -93,8 +94,10 @@ class HomeView extends GetView<HomeController> {
           ),
           indicatorSize: TabBarIndicatorSize.tab,
           dividerColor: Colors.transparent,
-          labelPadding: const EdgeInsets.symmetric(horizontal: 14),
-          isScrollable: true,
+          labelPadding: const EdgeInsets.symmetric(
+            horizontal: 14,
+          ), 
+          isScrollable: true, 
           tabAlignment: TabAlignment.start,
           onTap: (index) {
             // Call changeTab method
@@ -123,8 +126,7 @@ class HomeView extends GetView<HomeController> {
               ),
               const SizedBox(height: 4),
               Obx(
-                () => Text(
-                  //Store name by terminal
+                () => Text(//Store name by terminal
                   controller.storeName.value,
                   style: const TextStyle(
                     fontSize: 18,
@@ -137,13 +139,17 @@ class HomeView extends GetView<HomeController> {
           Row(
             children: [
               InkWell(
+                onTap: () => controller.loadOrders(),
+                child: const Padding(
+                  padding: EdgeInsets.only(right: 16),
+                  child: Icon(Icons.refresh, color: Colors.black54),
+                ),
+              ),
+              InkWell(
                 onTap: () {
                   SettingsView.open();
                 },
-                child: const Icon(
-                  Icons.settings_outlined,
-                  color: Colors.black54,
-                ),
+                child: const Icon(Icons.settings_outlined, color: Colors.black54),
               ),
             ],
           ),
@@ -155,7 +161,7 @@ class HomeView extends GetView<HomeController> {
   // ===== DIVIDER WIDGET =====
   Widget _buildDivider() {
     return Padding(
-      padding: const EdgeInsets.only(top: 10, bottom: 10),
+      padding: const EdgeInsets.only(top:  10, bottom: 10),
       child: Container(
         height: 2,
         width: double.infinity,
@@ -267,8 +273,7 @@ class HomeView extends GetView<HomeController> {
               ),
               //BUTTON STATUS
               GestureDetector(
-                onTap: () =>
-                    Get.find<HomeController>().toggleOrderStatus(order),
+                onTap: () => Get.find<HomeController>().toggleOrderStatus(order),
                 child: Container(
                   padding: const EdgeInsets.symmetric(
                     vertical: 12,
@@ -279,7 +284,7 @@ class HomeView extends GetView<HomeController> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    order.orderStatus,
+                    order.displayStatus,
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
