@@ -245,6 +245,7 @@ class ApiService extends GetxService {
       return Failure(message: e.toString());
     }
   }
+
   // ===== GET TERMINALS =====
   Future<Result<Map<String, dynamic>>> getTerminals(String company) async {
     try {
@@ -297,5 +298,75 @@ class ApiService extends GetxService {
       print('❌ Error getting terminals: $e');
       return Failure(message: e.toString());
     }
+  }
+
+  // ===== MARK TICKET READY / RECALL =====
+
+  Future<Result<Map<String, dynamic>>> _updateTicketStatus({
+    required String action, // 'ready' or 'recall'
+    required String ticketId,
+    required String companyId,
+    required String terminalId,
+    String storeId = '',
+  }) async {
+    try {
+      final response = await _apiClient.post(
+        'adm/v1/api/queue_display/tickets/$action',
+        {
+          'companyId': companyId,
+          'terminalId': terminalId,
+          'syncDate': '',
+          'storeId': storeId,
+          'ticketId': ticketId,
+        },
+        baseUrl: ApiClient.tdServiceUrl,
+      );
+
+      print('📥 Status: ${response.statusCode}');
+      print('📥 Response: ${response.data}');
+
+      if (response.statusCode == 200) {
+        final dynamic data = response.data;
+        if (data is Map<String, dynamic>) return Success(data);
+        return Failure(message: 'Unexpected response format');
+      }
+
+      return Failure(
+        message: response.data['message'] ?? 'Failed to update ticket',
+      );
+    } catch (e) {
+      print('❌ Error updating ticket: $e');
+      return Failure(message: e.toString());
+    }
+  }
+
+  Future<Result<Map<String, dynamic>>> markTicketReady({
+    required String ticketId,
+    required String companyId,
+    required String terminalId,
+    String storeId = '',
+  }) {
+    return _updateTicketStatus(
+      action: 'ready',
+      ticketId: ticketId,
+      companyId: companyId,
+      terminalId: terminalId,
+      storeId: storeId,
+    );
+  }
+
+  Future<Result<Map<String, dynamic>>> markTicketRecall({
+    required String ticketId,
+    required String companyId,
+    required String terminalId,
+    String storeId = '',
+  }) {
+    return _updateTicketStatus(
+      action: 'recall',
+      ticketId: ticketId,
+      companyId: companyId,
+      terminalId: terminalId,
+      storeId: storeId,
+    );
   }
 }

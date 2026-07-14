@@ -65,7 +65,7 @@ class HomeView extends GetView<HomeController> {
     final controller = Get.find<HomeController>();
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20,),
+      padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Container(
         height: 30,
         width: double.infinity,
@@ -75,7 +75,6 @@ class HomeView extends GetView<HomeController> {
         ),
         child: TabBar(
           tabs: controller.tabTitles.map((title) {
-           
             return Tab(text: title);
           }).toList(),
           labelColor: Colors.black,
@@ -94,10 +93,8 @@ class HomeView extends GetView<HomeController> {
           ),
           indicatorSize: TabBarIndicatorSize.tab,
           dividerColor: Colors.transparent,
-          labelPadding: const EdgeInsets.symmetric(
-            horizontal: 14,
-          ), 
-          isScrollable: true, 
+          labelPadding: const EdgeInsets.symmetric(horizontal: 14),
+          isScrollable: true,
           tabAlignment: TabAlignment.start,
           onTap: (index) {
             // Call changeTab method
@@ -126,7 +123,8 @@ class HomeView extends GetView<HomeController> {
               ),
               const SizedBox(height: 4),
               Obx(
-                () => Text(//Store name by terminal
+                () => Text(
+                  //Store name by terminal
                   controller.storeName.value,
                   style: const TextStyle(
                     fontSize: 18,
@@ -136,11 +134,18 @@ class HomeView extends GetView<HomeController> {
               ),
             ],
           ),
-          InkWell(
-            onTap: () {
-              SettingsView.open();
-            },
-            child: const Icon(Icons.settings_outlined, color: Colors.black54),
+          Row(
+            children: [
+              InkWell(
+                onTap: () {
+                  SettingsView.open();
+                },
+                child: const Icon(
+                  Icons.settings_outlined,
+                  color: Colors.black54,
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -150,7 +155,7 @@ class HomeView extends GetView<HomeController> {
   // ===== DIVIDER WIDGET =====
   Widget _buildDivider() {
     return Padding(
-      padding: const EdgeInsets.only(top:  10, bottom: 10),
+      padding: const EdgeInsets.only(top: 10, bottom: 10),
       child: Container(
         height: 2,
         width: double.infinity,
@@ -188,13 +193,17 @@ class HomeView extends GetView<HomeController> {
       );
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      itemCount: filteredOrders.length,
-      itemBuilder: (context, index) {
-        final order = filteredOrders[index];
-        return _buildOrderCard(order, foods);
-      },
+    return RefreshIndicator(
+      onRefresh: () => Get.find<HomeController>().loadOrders(),
+      child: ListView.builder(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        itemCount: filteredOrders.length,
+        itemBuilder: (context, index) {
+          final order = filteredOrders[index];
+          return _buildOrderCard(order, foods);
+        },
+      ),
     );
   }
 
@@ -257,21 +266,25 @@ class HomeView extends GetView<HomeController> {
                 ),
               ),
               //BUTTON STATUS
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 12,
-                  horizontal: 24,
-                ),
-                decoration: BoxDecoration(
-                  color: order.statusColor,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  order.status,
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    color: order.textColors,
+              GestureDetector(
+                onTap: () =>
+                    Get.find<HomeController>().toggleOrderStatus(order),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 12,
+                    horizontal: 24,
+                  ),
+                  decoration: BoxDecoration(
+                    color: order.statusColor,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    order.orderStatus,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: order.textColors,
+                    ),
                   ),
                 ),
               ),

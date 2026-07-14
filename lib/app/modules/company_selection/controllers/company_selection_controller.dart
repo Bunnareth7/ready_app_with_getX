@@ -170,7 +170,7 @@ class CompanySelectionController extends GetxController {
     return _terminalItems[index];
   }
 
-  void connect() {
+  Future<void> connect() async {
     if (!isButtonEnabled.value) return;
 
     final selectedItem = _findSelectedTerminalItem();
@@ -182,7 +182,9 @@ class CompanySelectionController extends GetxController {
     _storage.write('terminalId', selectedTerminal.value);
     _storage.write('storeName', storeName);
 
-    _mqttService.connect(terminalId: selectedTerminal.value);
+    // Wait for MQTT to actually connect before navigating, so Home doesn't
+    // try to subscribe while still mid-handshake.
+    await _mqttService.connect(terminalId: selectedTerminal.value);
 
     Get.snackbar(
       'Success',

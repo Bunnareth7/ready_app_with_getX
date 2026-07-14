@@ -9,6 +9,8 @@ class ApiClient {
 
   static const String baseUrlGateway = 'https://uat.monakom.com/gateway/';
   static const String baseUrlApi = 'https://uat.monakom.com/216/erp_cloud/';
+
+  static const String tdServiceUrl = 'https://uat.monakom.com/gateway/';
   static const String apiKey = '6NpyIrfdrhGGWFcoSKzydv4HprQ4qPmHq7ylz5XQ6mI';
   //static const String terminalByCompany =
   // "https://uat.monakom.com/216/erp_cloud/";
@@ -62,11 +64,37 @@ class ApiClient {
   }
 
   // ===== POST REQUEST =====
-  Future<dynamic> post(String endpoint, dynamic data) async {
-    print('📤 POST: $baseUrlGateway$endpoint');
-    final response = await _dio.post(endpoint, data: data);
+
+  Future<dynamic> post(String endpoint, dynamic data, {String? baseUrl}) async {
+    if (baseUrl == null) {
+      print('📤 POST: $baseUrlGateway$endpoint');
+      final response = await _dio.post(endpoint, data: data);
+      return response;
+    }
+
+    final token = _storage.read('access_token');
+    final headers = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'x-api-key': apiKey,
+    };
+    if (token != null && token.isNotEmpty) {
+      headers['Authorization'] = 'Bearer $token';
+    }
+
+    final dio = Dio(
+      BaseOptions(
+        baseUrl: baseUrl,
+        headers: headers,
+        validateStatus: (status) => status != null,
+      ),
+    );
+
+    print('📤 POST: $baseUrl$endpoint');
+    final response = await dio.post(endpoint, data: data);
     return response;
   }
+
   // ===== GET REQUEST =====
   Future<dynamic> get(String endpoint, {String? baseUrl}) async {
     final url = baseUrl ?? baseUrlApi;
@@ -101,8 +129,5 @@ class ApiClient {
 
     final response = await dio.get(endpoint);
     return response;
-
-    
   }
-  
 }

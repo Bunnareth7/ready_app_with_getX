@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:mqtt5_client/mqtt5_client.dart';
 import 'package:mqtt5_client/mqtt5_server_client.dart';
 
+// Handles MQTT connection, matches ApiService's GetxService pattern.
 class MqttService extends GetxService {
   late MqttServerClient _client;
 
@@ -81,6 +82,10 @@ class MqttService extends GetxService {
     String message, {
     MqttQos qos = MqttQos.atLeastOnce,
   }) {
+    if (_client.connectionStatus?.state != MqttConnectionState.connected) {
+      print('⚠️ Skipped publish($topic) — not connected yet');
+      return;
+    }
     final builder = MqttPayloadBuilder();
     builder.addString(message);
     _client.publishMessage(topic, qos, builder.payload!);

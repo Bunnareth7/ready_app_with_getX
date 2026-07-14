@@ -1,10 +1,13 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:learn_getx2/app/data/models/order_model.dart';
 import 'package:learn_getx2/app/data/providers/api_service.dart';
 import 'package:learn_getx2/app/core/results/result.dart';
 import 'package:learn_getx2/app/data/providers/mqtt_service.dart';
+import 'package:learn_getx2/app/data/models/order_ticket_message.dart';
+import 'package:mqtt5_client/mqtt5_client.dart';
 
 class HomeController extends GetxController {
   final ApiService _apiService = Get.find<ApiService>();
@@ -61,11 +64,77 @@ class HomeController extends GetxController {
     super.onInit();
     loadOrderTypes();
 
-    // ====repace with real topic=====
-    _mqttService.subscribe('#'); 
+    subscribeTicketReadyMQTT();
+  }
+
+  void subscribeTicketReadyMQTT() {
+    print('Subscribing to MQTT topics...');
+    const topic = 'TicketService_uat_TicketReadyBroadcast';
+    _mqttService.subscribe(topic);
     _mqttSubscription = _mqttService.messages.listen((event) {
-      loadOrders();
+      try {
+        final publishMessage = event.payload as MqttPublishMessage;
+        final bytes = publishMessage.payload.message!;
+        final rawStr = MqttPublishPayload.bytesToStringAsString(bytes);
+        receiveMessageMQTT(event.topic ?? '', rawStr);
+      } catch (e) {
+        print('⚠️ Could not decode payload: $e');
+      }
     });
+  }
+
+  void receiveMessageMQTT(String topic, String message) {
+    final decoded = jsonDecode(utf8.decode(message.codeUnits));
+    print('📦 Decoded payload: $decoded');
+    final receivedTicket = OrderTicketMessage.fromJson(decoded);
+    _checkingTicketMessageReceived(receivedTicket);
+  }
+
+  void _checkingTicketMessageReceived(OrderTicketMessage ticket) {
+    final index = orders.indexWhere((o) => o.realId == ticket.id);
+    if (index != -1) {
+      orders[index].orderStatus = ticket.orderStatus;
+      orders.refresh();
+      print('✅ Updated order ${ticket.id} in place: ${ticket.orderStatus}');
+    } else {
+      print('ℹ️ Unknown ticket ${ticket.id} — reloading full list');
+      loadOrders();
+    }
+  }
+
+  @override
+  void onClose() {
+    _mqttSubscription?.cancel();
+    super.onClose();
+  }
+
+  // Toggles between RECALL and READY via the real REST endpoints
+
+  Future<void> toggleOrderStatus(Order order) async {
+    final isReady = order.orderStatus.toUpperCase() == 'READY';
+    final companyId = _storage.read('company') ?? '';
+
+    final result = isReady
+        ? await _apiService.markTicketRecall(
+            ticketId: order.realId,
+            companyId: companyId,
+            terminalId: terminalId,
+          )
+        : await _apiService.markTicketReady(
+            ticketId: order.realId,
+            companyId: companyId,
+            terminalId: terminalId,
+          );
+
+    switch (result) {
+      case Success():
+        order.orderStatus = isReady ? 'RECALL' : 'READY';
+        orders.refresh();
+        break;
+      case Failure():
+        print('❌ Failed to update ticket: ${result.message}');
+        break;
+    }
   }
 
   Future<void> loadOrders() async {
@@ -79,14 +148,12 @@ class HomeController extends GetxController {
     Result<Map<String, dynamic>> result;
 
     if (filter == 'All') {
-      // Get all orders
       result = await _apiService.getOrderList(
         terminalId: terminalId,
         page: 0,
         size: 100,
       );
     } else {
-      // Get orders by type
       result = await _apiService.getOrdersByType(
         terminalId: terminalId,
         orderType: filter,
@@ -98,15 +165,13 @@ class HomeController extends GetxController {
       case Success():
         final data = result.data;
 
-        // Extract server time
         final serverNow = data['timestamp'] != null
             ? DateTime.fromMillisecondsSinceEpoch(
                 data['timestamp'] as int,
                 isUtc: true,
               )
-            : DateTime.now().toUtc(); // fallback if timestamp is ever missing
+            : DateTime.now().toUtc();
 
-        // Parse response - adjust based on actual API response
         final List<dynamic> orderData =
             data['data'] ?? data['list'] ?? data['tickets'] ?? [];
 
@@ -125,8 +190,6 @@ class HomeController extends GetxController {
 
     isLoading.value = false;
   }
-
-  // tab titles from API
 
   Future<void> loadOrderTypes() async {
     try {
@@ -150,12 +213,6 @@ class HomeController extends GetxController {
     } catch (e) {
       tabTitles.value = ['All', 'Pickup', 'Walk-in', 'Delivery', 'Takeaway'];
       loadOrders();
-       
-    }
-   @override
-    void onClose() {
-      _mqttSubscription?.cancel();
-      super.onClose();
     }
   }
 }
