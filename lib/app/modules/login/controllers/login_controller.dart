@@ -15,6 +15,29 @@ class LoginController extends GetxController {
   var errorMessage = ''.obs;
   var isPasswordVisible = false.obs;
 
+  @override
+  void onInit() {
+    super.onInit();
+    final token = _storage.read('access_token');
+    if (token != null && token.toString().isNotEmpty) {
+      final company = _storage.read('company');
+      final storedTerminalId = _storage.read('terminalId');
+      final hasCompanyAndTerminal =
+          company != null &&
+          company.toString().isNotEmpty &&
+          storedTerminalId != null &&
+          storedTerminalId.toString().isNotEmpty;
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (hasCompanyAndTerminal) {
+          Get.offAllNamed('/home');
+        } else {
+          Get.offAllNamed('/company-selection');
+        }
+      });
+    }
+  }
+
   // Login using Result<T>
   Future<void> login() async {
     final username = usernameController.text.trim();

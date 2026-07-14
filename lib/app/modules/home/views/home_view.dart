@@ -129,7 +129,7 @@ class HomeView extends GetView<HomeController> {
                 () => Text(//Store name by terminal
                   controller.storeName.value,
                   style: const TextStyle(
-                    fontSize: 18,
+                    fontSize: 15,
                     fontWeight: FontWeight.w400,
                   ),
                 ),
@@ -138,13 +138,7 @@ class HomeView extends GetView<HomeController> {
           ),
           Row(
             children: [
-              InkWell(
-                onTap: () => controller.loadOrders(),
-                child: const Padding(
-                  padding: EdgeInsets.only(right: 16),
-                  child: Icon(Icons.refresh, color: Colors.black54),
-                ),
-              ),
+              
               InkWell(
                 onTap: () {
                   SettingsView.open();

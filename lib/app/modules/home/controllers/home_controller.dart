@@ -65,6 +65,14 @@ class HomeController extends GetxController {
     loadOrderTypes();
 
     // Real topic, per terminal — matches client ID prefix pattern.
+    _ensureMqttThenSubscribe();
+  }
+
+  // onInit() can't be async directly, so this wraps the connect-then-
+  // subscribe sequence. Safe to call even if already connected (e.g. via
+  // company selection) — connect() just skips reconnecting in that case.
+  Future<void> _ensureMqttThenSubscribe() async {
+    await _mqttService.connect(terminalId: terminalId);
     subscribeTicketReadyMQTT();
   }
 
