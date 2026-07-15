@@ -5,7 +5,7 @@ import 'package:get/get.dart';
 import 'package:mqtt5_client/mqtt5_client.dart';
 import 'package:mqtt5_client/mqtt5_server_client.dart';
 
-// Handles MQTT connection, matches ApiService's GetxService pattern.
+// Handles MQTT connection.
 class MqttService extends GetxService {
   MqttServerClient? _client;
 
@@ -20,8 +20,6 @@ class MqttService extends GetxService {
   Stream<MqttReceivedMessage> get messages => _messageController.stream;
 
   Future<void> connect({required String terminalId}) async {
-    // Already connected — safe to call from multiple places (e.g. both
-    // CompanySelectionController and HomeController) without reconnecting.
     if (_client?.connectionStatus?.state == MqttConnectionState.connected) {
       print('ℹ️ MQTT already connected — skipping reconnect');
       return;
@@ -51,9 +49,6 @@ class MqttService extends GetxService {
       client.disconnect();
       return;
     }
-
-    // The connect() Future can resolve slightly before the internal state
-    // flips to 'connected' — poll briefly instead of trusting it immediately.
     var attempts = 0;
     while (client.connectionStatus?.state == MqttConnectionState.connecting &&
         attempts < 20) {
@@ -85,10 +80,11 @@ class MqttService extends GetxService {
     _client!.subscribe(topic, qos);
   }
 
-  // unsubscribe() removed for now — not used yet, and the exact overload
-  // for this package version needs checking before adding back.
-
-  void publish(String topic, String message, {MqttQos qos = MqttQos.atLeastOnce}) {
+  void publish(
+    String topic,
+    String message, {
+    MqttQos qos = MqttQos.atLeastOnce,
+  }) {
     if (_client?.connectionStatus?.state != MqttConnectionState.connected) {
       print('⚠️ Skipped publish($topic) — not connected yet');
       return;
@@ -100,7 +96,6 @@ class MqttService extends GetxService {
 
   void disconnect() => _client?.disconnect();
 
-  // Matches: MonakomReadyAppClient_{terminalId}_{randomSuffix}
   String _buildClientId(String terminalId) {
     final suffix = Random().nextInt(999999).toString().padLeft(6, '0');
     return 'MonakomReadyAppClient_${terminalId}_$suffix';

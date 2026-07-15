@@ -81,6 +81,7 @@ class CompanySelectionView extends GetView<CompanySelectionController> {
       ),
     );
   }
+
   Widget _buildCompanyDropdown() {
     return Obx(() {
       return Container(
@@ -103,7 +104,10 @@ class CompanySelectionView extends GetView<CompanySelectionController> {
             items: controller.companies.map((company) {
               return DropdownMenuItem<String>(
                 value: company,
-                child: Text(company),
+                child: Text(
+                  company,
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w300),
+                ),
               );
             }).toList(),
             onChanged: controller.selectCompany,
@@ -135,7 +139,14 @@ class CompanySelectionView extends GetView<CompanySelectionController> {
             items: controller.terminals.map((terminal) {
               return DropdownMenuItem<String>(
                 value: terminal,
-                child: Text(terminal),
+                child: Text(
+                  terminal,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w300,
+                    color: Colors.grey,
+                  ),
+                ),
               );
             }).toList(),
             onChanged: controller.selectTerminal,

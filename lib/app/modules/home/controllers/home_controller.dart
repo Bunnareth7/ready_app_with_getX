@@ -64,22 +64,19 @@ class HomeController extends GetxController {
     super.onInit();
     loadOrderTypes();
 
-    // Real topic, per terminal — matches client ID prefix pattern.
+    // Real topic, per terminal
     _ensureMqttThenSubscribe();
   }
 
-  // onInit() can't be async directly, so this wraps the connect-then-
-  // subscribe sequence. Safe to call even if already connected (e.g. via
-  // company selection) — connect() just skips reconnecting in that case.
   Future<void> _ensureMqttThenSubscribe() async {
     await _mqttService.connect(terminalId: terminalId);
     subscribeTicketReadyMQTT();
   }
 
-  // Mirrors lead's subscribeMenuMessageMQTT() pattern.
   void subscribeTicketReadyMQTT() {
     print('Subscribing to MQTT topics...');
-    const topic = 'TicketService_uat_TicketReadyBroadcast';
+    //Listen topic per termianl
+    final topic = 'TicketService_uat_TicketReadyBroadcast_$terminalId';
     _mqttService.subscribe(topic);
     _mqttSubscription = _mqttService.messages.listen((event) {
       try {
@@ -101,8 +98,6 @@ class HomeController extends GetxController {
     _checkingTicketMessageReceived(receivedTicket);
   }
 
-  // Mirrors lead's _checkingTicketMessageReceived — find by ID, update in
-  // place if known, otherwise fall back to a full reload for new tickets.
   void _checkingTicketMessageReceived(OrderTicketMessage ticket) {
     final index = orders.indexWhere((o) => o.realId == ticket.id);
     if (index != -1) {
@@ -121,9 +116,8 @@ class HomeController extends GetxController {
     super.onClose();
   }
 
-  // Toggles between RECALL and READY via the real REST endpoints
-  // (confirmed from Postman docs). Not MQTT — that's just for receiving
-  // updates, this is for sending them.
+  // Toggles between RECALL and READY
+
   final Set<String> _togglingIds = {};
 
   Future<void> toggleOrderStatus(Order order) async {

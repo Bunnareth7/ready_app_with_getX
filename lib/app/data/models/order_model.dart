@@ -37,11 +37,7 @@ class Order {
     required this.realId,
   });
 
-  // ✅ Parse from API response
-  // NOTE: `serverNow` must come from the API response's top-level `timestamp`
-  // field (epoch millis, UTC). This ensures every terminal calculates
-  // elapsed time against the SAME clock, instead of each device's own
-  // (possibly wrong / different-timezone) local clock.
+ 
   factory Order.fromJson(Map<String, dynamic> json, DateTime serverNow) {
     print('📥 Parsing Order: $json');
 
@@ -101,7 +97,7 @@ class Order {
     );
   }
 
-  // ✅ Format order number: "70", "71", "72"
+  //Format order number: "70", "71", "72"
   static String _formatOrderNumber(String id) {
     if (id.isEmpty) return '00';
 
@@ -128,11 +124,7 @@ class Order {
     return id.padLeft(2, '0');
   }
 
-  // ✅ Format waiting time: "28m", "1h 42m"
-  // `serverNow` is the server's clock (from the API response's `timestamp`
-  // field), NOT DateTime.now(). This avoids drift/mismatch between
-  // terminals that have different device clocks or timezone settings.
-  static String _formatWaitingTime(String timeStr, DateTime serverNow) {
+   static String _formatWaitingTime(String timeStr, DateTime serverNow) {
     if (timeStr.isEmpty) return '0m';
 
     try {
@@ -141,12 +133,7 @@ class Order {
         return timeStr;
       }
 
-      // dateCreated comes with no timezone suffix, e.g. "2024-03-15T11:18:37"
-      // Force it to be parsed as UTC so it aligns with serverNow (also UTC).
-      //
-      // ⚠️ IMPORTANT: confirm with your backend whether `dateCreated` is
-      // actually UTC or Cambodia local time (UTC+7). If it's local time,
-      // see the alternate block commented below instead.
+      
       String normalized = timeStr;
       if (!normalized.endsWith('Z') && !normalized.contains('+')) {
         normalized = '${normalized}Z';
@@ -171,17 +158,7 @@ class Order {
         }
       }
 
-      // --- ALTERNATE VERSION if dateCreated is Cambodia LOCAL time, not UTC ---
-      // Replace the block above with this instead:
-      //
-      // final rawParsed = DateTime.tryParse(timeStr);
-      // if (rawParsed != null) {
-      //   final dateTimeUtc = rawParsed.subtract(const Duration(hours: 7));
-      //   final difference = serverNow.difference(dateTimeUtc);
-      //   ... (same hours/minutes logic as above)
-      // }
-      // -------------------------------------------------------------------
-
+     
       // If it's a number, treat as minutes
       final minutes = int.tryParse(timeStr);
       if (minutes != null) {
@@ -220,7 +197,7 @@ class Order {
   Color get statusColor {
     final s = orderStatus.toLowerCase();
     if (s == 'ready' || s == 'preparing') return Color(0xFF0BB20B);
-    if (s == 'recall') return Colors.orange;
+    if (s == 'recall') return Color(0xFFF1BD00);
     return Colors.grey;
   }
 
