@@ -75,7 +75,7 @@ class CompanySelectionController extends GetxController {
             companies.value = companyList;
             print('Companies loaded: ${companies.length}');
           } else {
-            companies.value = ['KOI_CAMBODIA_NEW'];
+            companies.value = ['KOI_CAMBODIA_NEW,fail'];
           }
           break;
 

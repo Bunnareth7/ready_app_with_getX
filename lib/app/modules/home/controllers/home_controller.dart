@@ -79,9 +79,7 @@ class HomeController extends GetxController {
   // Mirrors lead's subscribeMenuMessageMQTT() pattern.
   void subscribeTicketReadyMQTT() {
     print('Subscribing to MQTT topics...');
-    // Per-terminal topic — confirmed by testing that real-time POS
-    // updates require the terminal ID suffix (despite earlier info
-    // suggesting a single fixed topic for everyone).
+    
     final topic = 'TicketService_uat_TicketReadyBroadcast_$terminalId';
     _mqttService.subscribe(topic);
     _mqttSubscription = _mqttService.messages.listen((event) {
@@ -109,6 +107,23 @@ class HomeController extends GetxController {
   void _checkingTicketMessageReceived(OrderTicketMessage ticket) {
     final index = orders.indexWhere((o) => o.realId == ticket.id);
     if (index != -1) {
+      final lastLocal = _recentLocalUpdates[ticket.id];
+      final withinGracePeriod =
+          lastLocal != null &&
+          DateTime.now().difference(lastLocal) < const Duration(seconds: 4);
+
+      if (withinGracePeriod && orders[index].orderStatus != ticket.orderStatus) {
+        // We just set this ticket's status ourselves via REST, and this
+        // broadcast disagrees with it. Rather than flicker back and forth,
+        // trust our own recent write and ignore this one broadcast.
+        print(
+          '⚠️ Ignoring conflicting MQTT update for ${ticket.id}: '
+          'broadcast says ${ticket.orderStatus}, we just set '
+          '${orders[index].orderStatus} locally',
+        );
+        return;
+      }
+
       orders[index].orderStatus = ticket.orderStatus;
       orders.refresh();
       print('✅ Updated order ${ticket.id} in place: ${ticket.orderStatus}');
@@ -124,10 +139,9 @@ class HomeController extends GetxController {
     super.onClose();
   }
 
-  // Toggles between RECALL and READY via the real REST endpoints
-  // (confirmed from Postman docs). Not MQTT — that's just for receiving
-  // updates, this is for sending them.
+  // Toggles between RECALL and READY 
   final Set<String> _togglingIds = {};
+  final Map<String, DateTime> _recentLocalUpdates = {}; // realId -> when we last set it ourselves
 
   Future<void> toggleOrderStatus(Order order) async {
     if (_togglingIds.contains(order.realId)) return; // already in progress
@@ -154,6 +168,7 @@ class HomeController extends GetxController {
         case Success():
           order.orderStatus = isReady ? 'RECALL' : 'READY';
           orders.refresh();
+          _recentLocalUpdates[order.realId] = DateTime.now();
           break;
         case Failure():
           print('❌ Failed to update ticket: ${result.message}');
@@ -165,6 +180,7 @@ class HomeController extends GetxController {
             final realStatus = match.group(1)!.toUpperCase();
             order.orderStatus = realStatus;
             orders.refresh();
+            _recentLocalUpdates[order.realId] = DateTime.now();
             print('🔄 Corrected local status to: $realStatus');
           }
           break;

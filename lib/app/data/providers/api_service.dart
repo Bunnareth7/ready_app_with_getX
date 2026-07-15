@@ -328,6 +328,11 @@ class ApiService extends GetxService {
       if (response.statusCode == 200) {
         final dynamic data = response.data;
         if (data is Map<String, dynamic>) return Success(data);
+        // Recall's documented success response has no body at all — treat
+        // any empty/null 200 body as success too, not a parse failure.
+        if (data == null || (data is String && data.isEmpty)) {
+          return Success(const {});
+        }
         return Failure(message: 'Unexpected response format');
       }
 

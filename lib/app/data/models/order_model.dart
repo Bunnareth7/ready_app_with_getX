@@ -216,18 +216,6 @@ class Order {
         }
       }
 
-      // --- ALTERNATE VERSION if dateCreated is Cambodia LOCAL time, not UTC ---
-      // Replace the block above with this instead:
-      //
-      // final rawParsed = DateTime.tryParse(timeStr);
-      // if (rawParsed != null) {
-      //   final dateTimeUtc = rawParsed.subtract(const Duration(hours: 7));
-      //   final difference = serverNow.difference(dateTimeUtc);
-      //   ... (same hours/minutes logic as above)
-      // }
-      // -------------------------------------------------------------------
-
-      // If it's a number, treat as minutes
       final minutes = int.tryParse(timeStr);
       if (minutes != null) {
         if (minutes >= 60) {
