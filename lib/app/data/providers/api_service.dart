@@ -182,7 +182,7 @@ class ApiService extends GetxService {
         return value.toString();
       }
     }
-    // Some APIs nest it, e.g. {"data": {"id": "..."}}
+    // Some APIs nest
     final nested = userInfo['data'];
     if (nested is Map<String, dynamic>) {
       return _extractUserId(nested);

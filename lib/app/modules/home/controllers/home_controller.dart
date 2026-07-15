@@ -64,18 +64,24 @@ class HomeController extends GetxController {
     super.onInit();
     loadOrderTypes();
 
-    // Real topic, per terminal
+    // Real topic, per terminal — matches client ID prefix pattern.
     _ensureMqttThenSubscribe();
   }
 
+  // onInit() can't be async directly, so this wraps the connect-then-
+  // subscribe sequence. Safe to call even if already connected (e.g. via
+  // company selection) — connect() just skips reconnecting in that case.
   Future<void> _ensureMqttThenSubscribe() async {
     await _mqttService.connect(terminalId: terminalId);
     subscribeTicketReadyMQTT();
   }
 
+  // Mirrors lead's subscribeMenuMessageMQTT() pattern.
   void subscribeTicketReadyMQTT() {
     print('Subscribing to MQTT topics...');
-    //Listen topic per termianl
+    // Per-terminal topic — confirmed by testing that real-time POS
+    // updates require the terminal ID suffix (despite earlier info
+    // suggesting a single fixed topic for everyone).
     final topic = 'TicketService_uat_TicketReadyBroadcast_$terminalId';
     _mqttService.subscribe(topic);
     _mqttSubscription = _mqttService.messages.listen((event) {
@@ -98,6 +104,8 @@ class HomeController extends GetxController {
     _checkingTicketMessageReceived(receivedTicket);
   }
 
+  // Mirrors lead's _checkingTicketMessageReceived — find by ID, update in
+  // place if known, otherwise fall back to a full reload for new tickets.
   void _checkingTicketMessageReceived(OrderTicketMessage ticket) {
     final index = orders.indexWhere((o) => o.realId == ticket.id);
     if (index != -1) {
@@ -116,8 +124,9 @@ class HomeController extends GetxController {
     super.onClose();
   }
 
-  // Toggles between RECALL and READY
-
+  // Toggles between RECALL and READY via the real REST endpoints
+  // (confirmed from Postman docs). Not MQTT — that's just for receiving
+  // updates, this is for sending them.
   final Set<String> _togglingIds = {};
 
   Future<void> toggleOrderStatus(Order order) async {
@@ -148,6 +157,16 @@ class HomeController extends GetxController {
           break;
         case Failure():
           print('❌ Failed to update ticket: ${result.message}');
+          // Backend said the ticket's real status differs from what we
+          // had locally (e.g. "Ticket is READY. Cannot mark as ready.").
+          // Self-correct just this one order, no full list reload.
+          final match = RegExp(r'Ticket is (\w+)').firstMatch(result.message);
+          if (match != null) {
+            final realStatus = match.group(1)!.toUpperCase();
+            order.orderStatus = realStatus;
+            orders.refresh();
+            print('🔄 Corrected local status to: $realStatus');
+          }
           break;
       }
     } finally {

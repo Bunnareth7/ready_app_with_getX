@@ -18,6 +18,8 @@ class Order {
   final bool rawStatus;
   String orderStatus; // real backend status: RECALL or READY
   final String realId; // actual UUID from the API — needed for status updates
+  final DateTime? createdAtUtc; // parsed creation time, for live recalculation
+  final Duration serverOffset; // server clock vs device clock, at load time
 
   Order({
     required this.id,
@@ -35,9 +37,15 @@ class Order {
     required this.rawStatus,
     required this.orderStatus,
     required this.realId,
+    required this.createdAtUtc,
+    required this.serverOffset,
   });
 
- 
+  // ✅ Parse from API response
+  // NOTE: `serverNow` must come from the API response's top-level `timestamp`
+  // field (epoch millis, UTC). This ensures every terminal calculates
+  // elapsed time against the SAME clock, instead of each device's own
+  // (possibly wrong / different-timezone) local clock.
   factory Order.fromJson(Map<String, dynamic> json, DateTime serverNow) {
     print('📥 Parsing Order: $json');
 
@@ -56,11 +64,17 @@ class Order {
     final rawStatus = json['status'] ?? false;
     final status = rawStatus == true ? 'Ready' : 'Pending';
     final rawOrderStatus = _safeString(json['orderStatus']) ?? 'READY';
-    final orderStatus = rawOrderStatus; // keep the TRUE value — no normalizing here
+    final orderStatus = rawOrderStatus.toUpperCase() == 'PREPARING'
+        ? 'READY'
+        : rawOrderStatus;
 
     // ✅ Time - parse timeoutTime or dateCreated
     final rawTime = _safeString(json['dateCreated']) ?? '';
     final formattedTime = _formatWaitingTime(rawTime, serverNow);
+
+    // For live-updating elapsed time later (see liveElapsedTime getter).
+    final createdAtUtc = _parseToUtc(rawTime);
+    final serverOffset = serverNow.difference(DateTime.now().toUtc());
 
     // ✅ Location - destinationName
     final location = _safeString(json['destinationName']) ??
@@ -94,10 +108,12 @@ class Order {
       rawStatus: rawStatus,
       orderStatus: orderStatus,
       realId: _safeString(json['id']) ?? '',
+      createdAtUtc: createdAtUtc,
+      serverOffset: serverOffset,
     );
   }
 
-  //Format order number: "70", "71", "72"
+  // ✅ Format order number: "70", "71", "72"
   static String _formatOrderNumber(String id) {
     if (id.isEmpty) return '00';
 
@@ -124,7 +140,44 @@ class Order {
     return id.padLeft(2, '0');
   }
 
-   static String _formatWaitingTime(String timeStr, DateTime serverNow) {
+  // Recalculates elapsed time fresh every time it's read, instead of the
+  // frozen `time` string from when the order was first loaded. Call
+  // orders.refresh() periodically (see HomeController) to make widgets
+  // showing this actually re-render and tick forward.
+  String get liveElapsedTime {
+    if (createdAtUtc == null) return time; // fallback if we couldn't parse a real datetime
+    final estimatedServerNow = DateTime.now().toUtc().add(serverOffset);
+    final difference = estimatedServerNow.difference(createdAtUtc!);
+    return _formatDuration(difference);
+  }
+
+  static String _formatDuration(Duration difference) {
+    final hours = difference.inHours;
+    final minutes = difference.inMinutes.remainder(60);
+    if (hours > 0) {
+      return minutes > 0 ? '${hours}h ${minutes}m' : '${hours}h';
+    }
+    final totalMinutes = difference.inMinutes;
+    return totalMinutes < 0 ? '0m' : '${totalMinutes}m';
+  }
+
+  // Parses dateCreated into a real UTC DateTime, or null if it's already
+  // a formatted string ("28m") or plain number — those can't be recalculated.
+  static DateTime? _parseToUtc(String timeStr) {
+    if (timeStr.isEmpty) return null;
+    if (timeStr.contains('m') || timeStr.contains('h')) return null;
+    String normalized = timeStr;
+    if (!normalized.endsWith('Z') && !normalized.contains('+')) {
+      normalized = '${normalized}Z';
+    }
+    return DateTime.tryParse(normalized);
+  }
+
+  // ✅ Format waiting time: "28m", "1h 42m"
+  // `serverNow` is the server's clock (from the API response's `timestamp`
+  // field), NOT DateTime.now(). This avoids drift/mismatch between
+  // terminals that have different device clocks or timezone settings.
+  static String _formatWaitingTime(String timeStr, DateTime serverNow) {
     if (timeStr.isEmpty) return '0m';
 
     try {
@@ -133,7 +186,12 @@ class Order {
         return timeStr;
       }
 
-      
+      // dateCreated comes with no timezone suffix, e.g. "2024-03-15T11:18:37"
+      // Force it to be parsed as UTC so it aligns with serverNow (also UTC).
+      //
+      // ⚠️ IMPORTANT: confirm with your backend whether `dateCreated` is
+      // actually UTC or Cambodia local time (UTC+7). If it's local time,
+      // see the alternate block commented below instead.
       String normalized = timeStr;
       if (!normalized.endsWith('Z') && !normalized.contains('+')) {
         normalized = '${normalized}Z';
@@ -158,7 +216,17 @@ class Order {
         }
       }
 
-     
+      // --- ALTERNATE VERSION if dateCreated is Cambodia LOCAL time, not UTC ---
+      // Replace the block above with this instead:
+      //
+      // final rawParsed = DateTime.tryParse(timeStr);
+      // if (rawParsed != null) {
+      //   final dateTimeUtc = rawParsed.subtract(const Duration(hours: 7));
+      //   final difference = serverNow.difference(dateTimeUtc);
+      //   ... (same hours/minutes logic as above)
+      // }
+      // -------------------------------------------------------------------
+
       // If it's a number, treat as minutes
       final minutes = int.tryParse(timeStr);
       if (minutes != null) {
@@ -190,13 +258,9 @@ class Order {
   }
 
   // ✅ Status color based on status
-  // What to SHOW — PREPARING looks like READY (green "READY" badge).
-  String get displayStatus =>
-      orderStatus.toUpperCase() == 'PREPARING' ? 'READY' : orderStatus;
-
   Color get statusColor {
     final s = orderStatus.toLowerCase();
-    if (s == 'ready' || s == 'preparing') return Color(0xFF0BB20B);
+    if (s == 'ready') return Color(0xFF0BB20B);
     if (s == 'recall') return Color(0xFFF1BD00);
     return Colors.grey;
   }

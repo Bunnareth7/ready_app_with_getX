@@ -265,9 +265,11 @@ class HomeView extends GetView<HomeController> {
                   ],
                 ),
               ),
-              //BUTTON STATUS
+              // ACTION FOR BUTTON STATUS===
               GestureDetector(
-                onTap: () => Get.find<HomeController>().toggleOrderStatus(order),
+                onTap: order.orderStatus.toUpperCase() == 'READY'
+                    ? () => Get.find<HomeController>().toggleOrderStatus(order)
+                    : null, // RECALL can not tap yet
                 child: Container(
                   padding: const EdgeInsets.symmetric(
                     vertical: 12,
@@ -278,7 +280,7 @@ class HomeView extends GetView<HomeController> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    order.displayStatus,
+                    order.orderStatus,
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
