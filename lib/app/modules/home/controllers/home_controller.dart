@@ -64,22 +64,17 @@ class HomeController extends GetxController {
     super.onInit();
     loadOrderTypes();
 
-    // Real topic, per terminal — matches client ID prefix pattern.
+    // Real topic, per terminal
     _ensureMqttThenSubscribe();
   }
 
-  // onInit() can't be async directly, so this wraps the connect-then-
-  // subscribe sequence. Safe to call even if already connected (e.g. via
-  // company selection) — connect() just skips reconnecting in that case.
   Future<void> _ensureMqttThenSubscribe() async {
     await _mqttService.connect(terminalId: terminalId);
     subscribeTicketReadyMQTT();
   }
 
-  // Mirrors lead's subscribeMenuMessageMQTT() pattern.
   void subscribeTicketReadyMQTT() {
     print('Subscribing to MQTT topics...');
-    
     final topic = 'TicketService_uat_TicketReadyBroadcast_$terminalId';
     _mqttService.subscribe(topic);
     _mqttSubscription = _mqttService.messages.listen((event) {
@@ -94,7 +89,6 @@ class HomeController extends GetxController {
     });
   }
 
-  // Mirrors lead's receiveMessageMQTT(topic, message) pattern.
   void receiveMessageMQTT(String topic, String message) {
     final decoded = jsonDecode(utf8.decode(message.codeUnits));
     print('📦 Decoded payload: $decoded');
@@ -102,28 +96,9 @@ class HomeController extends GetxController {
     _checkingTicketMessageReceived(receivedTicket);
   }
 
-  // Mirrors lead's _checkingTicketMessageReceived — find by ID, update in
-  // place if known, otherwise fall back to a full reload for new tickets.
   void _checkingTicketMessageReceived(OrderTicketMessage ticket) {
     final index = orders.indexWhere((o) => o.realId == ticket.id);
     if (index != -1) {
-      final lastLocal = _recentLocalUpdates[ticket.id];
-      final withinGracePeriod =
-          lastLocal != null &&
-          DateTime.now().difference(lastLocal) < const Duration(seconds: 4);
-
-      if (withinGracePeriod && orders[index].orderStatus != ticket.orderStatus) {
-        // We just set this ticket's status ourselves via REST, and this
-        // broadcast disagrees with it. Rather than flicker back and forth,
-        // trust our own recent write and ignore this one broadcast.
-        print(
-          '⚠️ Ignoring conflicting MQTT update for ${ticket.id}: '
-          'broadcast says ${ticket.orderStatus}, we just set '
-          '${orders[index].orderStatus} locally',
-        );
-        return;
-      }
-
       orders[index].orderStatus = ticket.orderStatus;
       orders.refresh();
       print('✅ Updated order ${ticket.id} in place: ${ticket.orderStatus}');
@@ -139,9 +114,7 @@ class HomeController extends GetxController {
     super.onClose();
   }
 
-  // Toggles between RECALL and READY 
   final Set<String> _togglingIds = {};
-  final Map<String, DateTime> _recentLocalUpdates = {}; // realId -> when we last set it ourselves
 
   Future<void> toggleOrderStatus(Order order) async {
     if (_togglingIds.contains(order.realId)) return; // already in progress
@@ -149,7 +122,7 @@ class HomeController extends GetxController {
 
     try {
       final currentStatus = order.orderStatus.toUpperCase();
-      final isReady = currentStatus == 'READY'; // only true READY can recall
+      final isReady = currentStatus == 'READY' || currentStatus == 'PREPARING';
       final companyId = _storage.read('company') ?? '';
 
       final result = isReady
@@ -164,27 +137,13 @@ class HomeController extends GetxController {
               terminalId: terminalId,
             );
 
-      switch (result) {
-        case Success():
-          order.orderStatus = isReady ? 'RECALL' : 'READY';
-          orders.refresh();
-          _recentLocalUpdates[order.realId] = DateTime.now();
-          break;
-        case Failure():
-          print('❌ Failed to update ticket: ${result.message}');
-          // Backend said the ticket's real status differs from what we
-          // had locally (e.g. "Ticket is READY. Cannot mark as ready.").
-          // Self-correct just this one order, no full list reload.
-          final match = RegExp(r'Ticket is (\w+)').firstMatch(result.message);
-          if (match != null) {
-            final realStatus = match.group(1)!.toUpperCase();
-            order.orderStatus = realStatus;
-            orders.refresh();
-            _recentLocalUpdates[order.realId] = DateTime.now();
-            print('🔄 Corrected local status to: $realStatus');
-          }
-          break;
+      if (result is Failure<Map<String, dynamic>>) {
+        print('❌ Failed to update ticket: ${result.message}');
       }
+
+      // Resync from the server so we show exactly what the list endpoint
+      // (and therefore the demo app) shows — no local guessing either way.
+      await loadOrders();
     } finally {
       _togglingIds.remove(order.realId);
     }
